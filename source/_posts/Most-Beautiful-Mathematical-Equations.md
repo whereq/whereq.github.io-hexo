@@ -1,6 +1,8 @@
 ---
 title: Most Beautiful Mathematical Equations
 date: 2024-10-22 00:18:01
+categories:
+- Math
 tags:
 - Math
 ---
