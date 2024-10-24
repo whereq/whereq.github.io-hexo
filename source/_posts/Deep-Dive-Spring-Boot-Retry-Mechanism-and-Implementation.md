@@ -3,10 +3,10 @@ title: Deep Dive Spring Boot Retry Mechanism and Implementation
 date: 2024-10-23 20:52:55
 categories:
 - Spring Boot
-- API
+- WebFlux
 tags:
 - Spring Boot
-- API
+- WebFlux
 ---
 
 
