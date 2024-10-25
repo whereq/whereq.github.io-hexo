@@ -24,8 +24,9 @@ tags:
 
 ---
 
-<a name="introduction-to-index-lifecycle-management-ilm"></a> 
 ## Introduction to Index Lifecycle Management (ILM)
+
+---
 
 ElasticSearch’s **Index Lifecycle Management (ILM)** allows you to define and automate how indices are managed throughout their lifecycle. This is critical for controlling the size, performance, and cost of your Elasticsearch cluster by ensuring data is stored in appropriate storage tiers as it ages.
 

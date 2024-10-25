@@ -7,11 +7,7 @@ tags:
 - Kafka
 ---
 
-# Kafka Transaction Workflow
-
-### Index
 - [Kafka Transaction Workflow](#kafka-transaction-workflow)
-    - [Index](#index)
     - [1. Introduction](#1-introduction)
     - [2. Idempotence in Kafka](#2-idempotence-in-kafka)
       - [2.1 How Idempotence Works](#21-how-idempotence-works)
@@ -24,10 +20,16 @@ tags:
         - [3) Committing or Aborting the Transaction](#3-committing-or-aborting-the-transaction)
     - [4. Diagram: Kafka Transaction Flow](#4-diagram-kafka-transaction-flow)
     - [5. Conclusion](#5-conclusion)
+    - [Key Takeaways:](#key-takeaways)
+
+---
+
+# Kafka Transaction Workflow
 
 ---
 
 ### 1. Introduction
+<a name="1-introduction"></a>
 
 Let’s first recall the concept of a transaction: either all operations succeed, or all of them fail. Kafka transactions follow the same rule.
 
@@ -42,10 +44,12 @@ The key points we will cover:
 ---
 
 ### 2. Idempotence in Kafka
+<a name="2-idempotence-in-kafka"></a>
 
 Idempotence ensures that no matter how many times the producer sends the same message, the Kafka broker will only persist it once, ensuring no data duplication. Idempotence is enabled by default and can be configured using the `enable.idempotence` setting.
 
 #### 2.1 How Idempotence Works
+<a name="21-how-idempotence-works"></a>
 
 The idempotence mechanism in Kafka is simple. Each message has a unique key composed of `<PID, Partition, SeqNumber>`:
 - **PID (Producer ID):** A unique identifier assigned to each producer when it starts.
@@ -57,16 +61,19 @@ Kafka prevents duplicate message persistence for messages with the same key. How
 ---
 
 ### 3. Kafka Transactions
+<a name="3-kafka-transactions"></a>
 
 Kafka transactions allow for atomic writes across multiple topics and partitions. All messages in the same transaction are either fully committed or fully aborted. 
 
 Kafka transactions are primarily concerned with **producer transactions**, though **consumer transactions** are also possible. However, consumers rely on the producer’s transaction mechanism, so we will focus on producer transactions here.
 
 #### 3.1 How to Enable Kafka Transactions
+<a name="31-how-to-enable-kafka-transactions"></a>
 
 Before delving into the internals of Kafka transactions, let’s start with a simple example.
 
 ##### Example: Creating a Kafka Producer with Transactions
+<a name="example-creating-a-kafka-producer-with-transactions"></a>
 
 ```java
 Properties properties = new Properties();
@@ -106,8 +113,11 @@ In this code:
 - After sending messages, it commits the transaction using `commitTransaction()`. If any error occurs, the transaction is aborted with `abortTransaction()`.
 
 #### 3.2 How Kafka Transactions Work
+<a name="32-how-kafka-transactions-work"></a>
 
 ##### 1) Starting the Producer and Assigning a Transaction Coordinator
+<a name="1-starting-the-producer-and-assigning-a-transaction-coordinator"></a>
+
 When using transactions, the producer must be assigned a **transactional ID**. Upon startup, Kafka assigns a **Transaction Coordinator** based on this ID. Each Kafka broker has a transaction coordinator responsible for assigning **Producer IDs (PIDs)** and managing transactions.
 
 The allocation of a transaction coordinator involves a special Kafka topic `__transaction_state`, which by default has 50 partitions. Each partition is responsible for a portion of the transactions. Kafka calculates the hash of the transactional ID and assigns the producer to a specific partition, whose leader broker will become the transaction coordinator.
@@ -115,11 +125,15 @@ The allocation of a transaction coordinator involves a special Kafka topic `__tr
 After assigning a coordinator, the coordinator assigns a **PID** to the producer, allowing it to start sending messages.
 
 ##### 2) Sending Messages
+<a name="2-sending-messages"></a>
+
 After receiving its PID, the producer informs the coordinator which partitions the transaction will target. Then, it starts sending messages. These messages are flagged as part of a transaction.
 
 Once the producer has sent all its transactional messages, it sends either a **Commit** or **Abort** request to the transaction coordinator, signaling the end of its task.
 
 ##### 3) Committing or Aborting the Transaction
+<a name="3-committing-or-aborting-the-transaction"></a>
+
 When the producer starts sending messages, the coordinator marks the beginning of the transaction and records it in the `__transaction_state` topic.
 
 Once all messages are sent, or in case of failure, the coordinator will receive a **Commit** or **Abort** request. The coordinator then communicates with all the topics involved in the transaction. If the transaction is successful, the topics confirm receipt of the messages, and the coordinator records the successful transaction.
@@ -129,6 +143,7 @@ If the transaction fails, all messages related to the transaction are discarded,
 ---
 
 ### 4. Diagram: Kafka Transaction Flow
+<a name="4-diagram-kafka-transaction-flow"></a>
 
 Below is a diagram representing the Kafka transaction process:
 
@@ -156,5 +171,14 @@ Below is a diagram representing the Kafka transaction process:
 ---
 
 ### 5. Conclusion
+<a name="5-conclusion"></a>
 
 Kafka transactions are a powerful feature that enables atomic writes across multiple topics and partitions, ensuring either all messages succeed or all fail. Built on top of Kafka's idempotence mechanism, Kafka transactions provide robust guarantees for message processing, making it a reliable tool for distributed systems.
+
+### Key Takeaways:
+- **Idempotence**: Ensures that messages are not duplicated, even with retries.
+- **Transactions**: Allow atomic writes across multiple topics and partitions.
+- **Transaction Coordinator**: Manages the lifecycle of transactions, including assigning PIDs and handling commit/abort requests.
+- **__transaction_state**: Special Kafka topic that stores transaction metadata.
+
+By mastering these concepts, you can build robust and reliable Kafka-based applications that handle complex message processing scenarios with ease.

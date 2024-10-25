@@ -9,11 +9,7 @@ tags:
 - WebFlux
 ---
 
-# WebClient and RestTemplate in Spring Boot
-
-## Index
 - [WebClient and RestTemplate in Spring Boot](#webclient-and-resttemplate-in-spring-boot)
-  - [Index](#index)
   - [1. Overview](#1-overview)
   - [2. What is RestTemplate?](#2-what-is-resttemplate)
     - [Characteristics:](#characteristics)
@@ -45,21 +41,30 @@ tags:
     - [9.5 Why RestTemplate Doesn't Have Backpressure](#95-why-resttemplate-doesnt-have-backpressure)
     - [9.6 When to Use RestTemplate](#96-when-to-use-resttemplate)
     - [9.7 Conclusion](#97-conclusion)
+    - [Key Takeaways:](#key-takeaways)
+
+---
+
+# WebClient and RestTemplate in Spring Boot
 
 ---
 
 ## 1. Overview
+<a name="1-overview"></a>
+
 Spring Boot offers two primary ways to make HTTP requests: `RestTemplate` and `WebClient`. While both can be used to interact with external APIs, they differ significantly in features, capabilities, and usage. In this article, we'll explore the key differences, when to use each, and best practices through practical examples.
 
 ## 2. What is RestTemplate?
+<a name="2-what-is-resttemplate"></a>
+
 `RestTemplate` is a synchronous client designed to perform HTTP requests and handle responses. It has been around for a long time and is simple to use but is gradually being deprecated in favor of `WebClient` for reactive programming.
 
 ### Characteristics:
-- Synchronous/blocking operations.
-- Easy to use for basic CRUD (Create, Read, Update, Delete) operations.
-- Simplified API for HTTP interactions.
-- Supports a wide range of RESTful operations (GET, POST, PUT, DELETE, etc.).
-  
+- **Synchronous/blocking operations**: Each request blocks the thread until the response is received.
+- **Easy to use**: Simplified API for HTTP interactions.
+- **Wide range of RESTful operations**: Supports GET, POST, PUT, DELETE, etc.
+- **Deprecated**: Spring team recommends using `WebClient` for new applications.
+
 ### Code Sample:
 ```java
 RestTemplate restTemplate = new RestTemplate();
@@ -70,13 +75,15 @@ System.out.println("Response: " + response.getBody());
 ```
 
 ## 3. What is WebClient?
+<a name="3-what-is-webclient"></a>
+
 `WebClient` is the successor to `RestTemplate`, introduced in Spring 5. It supports both synchronous and asynchronous (non-blocking) calls and is designed for reactive programming, making it more suitable for modern web applications.
 
 ### Characteristics:
-- Asynchronous and non-blocking.
-- Part of the Spring WebFlux module.
-- Supports backpressure, which is crucial for reactive streams.
-- Allows chaining of multiple operations in a declarative style.
+- **Asynchronous and non-blocking**: Allows multiple requests to be handled concurrently without blocking threads.
+- **Part of Spring WebFlux**: Built on top of the reactive stack.
+- **Supports backpressure**: Crucial for reactive streams to manage data flow.
+- **Chaining operations**: Allows declarative chaining of multiple operations.
 
 ### Code Sample:
 ```java
@@ -91,6 +98,7 @@ response.subscribe(System.out::println);
 ```
 
 ## 4. Key Differences
+<a name="4-key-differences"></a>
 
 | Feature                 | RestTemplate                           | WebClient                                                    |
 |-------------------------|----------------------------------------|--------------------------------------------------------------|
@@ -101,29 +109,40 @@ response.subscribe(System.out::println);
 | **Support for Streams** | No                                     | Yes, can handle large streams of data                        |
 | **Flexibility**         | Limited customizations                 | Highly flexible and configurable                             |
 
-### 4.1 [Synchronous vs Asynchronous](#synchronous-vs-asynchronous)
-- **RestTemplate** operates in a synchronous/blocking fashion, meaning the thread is blocked until the response arrives.
-- **WebClient** can operate both synchronously and asynchronously, allowing for non-blocking I/O and better scalability.
+### 4.1 Synchronous vs Asynchronous
+<a name="41-synchronous-vs-asynchronous"></a>
 
-### 4.2 [Reactive Support](#reactive-support)
+- **RestTemplate**: Operates in a synchronous/blocking fashion, meaning the thread is blocked until the response arrives.
+- **WebClient**: Can operate both synchronously and asynchronously, allowing for non-blocking I/O and better scalability.
+
+### 4.2 Reactive Support
+<a name="42-reactive-support"></a>
+
 `WebClient` is built to support the reactive paradigm of programming, which allows applications to handle a massive number of requests efficiently by leveraging non-blocking I/O operations. RestTemplate does not have this support.
 
-### 4.3 [Error Handling](#error-handling)
+### 4.3 Error Handling
+<a name="43-error-handling"></a>
+
 `WebClient` provides more flexible error handling with methods like `.onStatus()` for dealing with specific HTTP status codes.
 
-### 4.4 [Performance](#performance)
+### 4.4 Performance
+<a name="44-performance"></a>
+
 Due to its asynchronous nature, `WebClient` typically offers better performance in handling multiple HTTP requests concurrently, making it more suitable for high-performance applications.
 
-### 4.5 [Flexibility & Features](#flexibility--features)
+### 4.5 Flexibility & Features
+<a name="45-flexibility--features"></a>
+
 `WebClient` can be configured with timeouts, retries, and fallbacks more easily compared to `RestTemplate`. It supports streaming large amounts of data and provides reactive streams to manage data flow.
 
-## 5. [Best Practices and Use Cases](#best-practices-and-use-cases)
+## 5. Best Practices and Use Cases
+<a name="5-best-practices-and-use-cases"></a>
 
-- **When to use RestTemplate:**
+- **When to use RestTemplate**:
   - Small applications with minimal requirements for concurrency.
   - Use cases where synchronous/blocking operations are acceptable.
 
-- **When to use WebClient:**
+- **When to use WebClient**:
   - Modern applications requiring scalability and performance.
   - When working with large-scale microservices architectures.
   - For non-blocking and reactive API calls.
@@ -133,11 +152,14 @@ Due to its asynchronous nature, `WebClient` typically offers better performance 
 - Avoid using `RestTemplate` for large-scale systems due to its synchronous nature.
 - Handle errors properly using `onStatus()` in `WebClient`.
 
-## 6. [Real-Life Use Case Example](#real-life-use-case-example)
+## 6. Real-Life Use Case Example
+<a name="6-real-life-use-case-example"></a>
 
 Let's assume a situation where you are building a service to fetch data from multiple APIs concurrently. `RestTemplate` would block on each request, but `WebClient` would allow you to make all the calls concurrently and return the responses as they come in.
 
-### 6.1 [Using RestTemplate (Synchronous)](#resttemplate-example)
+### 6.1 Using RestTemplate (Synchronous)
+<a name="61-using-resttemplate-synchronous"></a>
+
 ```java
 @RestController
 public class ApiController {
@@ -153,7 +175,9 @@ public class ApiController {
 }
 ```
 
-### 6.2 [Using WebClient (Asynchronous)](#webclient-example)
+### 6.2 Using WebClient (Asynchronous)
+<a name="62-using-webclient-asynchronous"></a>
+
 ```java
 @RestController
 public class ApiController {
@@ -170,7 +194,9 @@ public class ApiController {
 }
 ```
 
-### 6.3 [Adding Retry and Fallback (WebClient)](#retry-fallback)
+### 6.3 Adding Retry and Fallback (WebClient)
+<a name="63-adding-retry-and-fallback-webclient"></a>
+
 ```java
 public class ApiService {
 
@@ -190,28 +216,38 @@ public class ApiService {
 }
 ```
 
-## 7. [Conclusion](#conclusion)
+## 7. Conclusion
+<a name="7-conclusion"></a>
+
 `RestTemplate` is simple and suitable for synchronous applications, but for modern, scalable applications, `WebClient` is the clear choice due to its non-blocking and reactive features. In Spring Boot applications, it's recommended to move towards `WebClient` for future-proofing your code.
 
-## 8. [Diagrams](#diagrams)
+## 8. Diagrams
+<a name="8-diagrams"></a>
 
 ### 8.1 Synchronous RestTemplate Workflow
+<a name="81-synchronous-resttemplate-workflow"></a>
+
 ```plaintext
 Request -> Server -> Blocking I/O -> Response -> Client
 ```
 
 ### 8.2 Asynchronous WebClient Workflow
+<a name="82-asynchronous-webclient-workflow"></a>
+
 ```plaintext
 Request -> Server -> Non-Blocking I/O -> Reactive Stream -> Response -> Client
 ```
 
+## 9. Deep Dive into Backpressure
+<a name="9-deep-dive-into-backpressure"></a>
 
-## 9. [Deep Dive into Backpressure](#9-deep-dive-into-backpressure)
 ### 9.1 What is Backpressure in Reactive Systems?
+<a name="91-what-is-backpressure-in-reactive-systems"></a>
 
 Backpressure refers to a mechanism used in reactive systems to control the flow of data between producers and consumers. It allows the consumer to handle data at a rate it can manage, preventing overload or crashes. If the producer is emitting data faster than the consumer can process, backpressure signals the producer to slow down or pause until the consumer catches up.
 
 ### 9.2 Is Backpressure Good or Bad?
+<a name="92-is-backpressure-good-or-bad"></a>
 
 **Good**:
 - **Efficient Resource Management**: Backpressure prevents resource exhaustion by controlling how much data is in the system.
@@ -223,6 +259,7 @@ Backpressure refers to a mechanism used in reactive systems to control the flow 
 - **Latency**: If not managed properly, backpressure can introduce latency because the producer has to wait until the consumer is ready to receive more data.
 
 ### 9.3 How WebClient Supports Backpressure
+<a name="93-how-webclient-supports-backpressure"></a>
 
 In Spring WebFlux, `WebClient` works in a reactive, non-blocking way and is integrated with Project Reactor to support backpressure. When fetching large streams of data, WebClient can handle them without overwhelming the system. Here's how it works:
 
@@ -231,6 +268,7 @@ In Spring WebFlux, `WebClient` works in a reactive, non-blocking way and is inte
 - **Flow Control**: In a typical scenario, the subscriber can signal how much data it wants to receive at any given moment. This avoids a flood of data that could cause the system to run out of resources. WebClient ensures that consumers can throttle the data based on their processing capacity.
 
 ### 9.4 Code Example of WebClient Supporting Backpressure
+<a name="94-code-example-of-webclient-supporting-backpressure"></a>
 
 ```java
 WebClient webClient = WebClient.create();
@@ -249,6 +287,7 @@ response.subscribe(data -> {
 In this example, the `limitRate()` method ensures the consumer processes the data stream at a manageable rate, effectively applying backpressure.
 
 ### 9.5 Why RestTemplate Doesn't Have Backpressure
+<a name="95-why-resttemplate-doesnt-have-backpressure"></a>
 
 RestTemplate is built on a blocking I/O model, which means it waits for each HTTP request to complete before proceeding to the next task. This approach works well for synchronous operations, but it lacks the flow control mechanisms needed for backpressure. Here's why RestTemplate doesn't support backpressure:
 
@@ -259,12 +298,19 @@ RestTemplate is built on a blocking I/O model, which means it waits for each HTT
 3. **Thread-per-request Model**: RestTemplate uses a traditional thread-per-request model, which consumes a thread for the entire duration of a request. This model isn't designed to handle large streams of data efficiently or manage backpressure when dealing with data that arrives at varying rates.
 
 ### 9.6 When to Use RestTemplate
+<a name="96-when-to-use-resttemplate"></a>
 
 RestTemplate is still useful for simple, synchronous tasks that don’t require fine-grained control over how data is processed, particularly when working with legacy systems or simple API interactions that don't involve heavy real-time data streaming.
 
 However, for reactive programming, high throughput, and complex asynchronous data handling, WebClient is the better choice, as it is designed to handle backpressure effectively.
 
 ### 9.7 Conclusion
+<a name="97-conclusion"></a>
 
 Backpressure is essential in reactive systems for maintaining stability and scalability. Spring WebClient leverages Project Reactor to support it, making it an excellent choice for modern applications handling large streams of data. While it adds some complexity, the benefits of resource management and smooth performance outweigh the drawbacks.
 
+### Key Takeaways:
+- **Backpressure**: A mechanism to control data flow in reactive systems.
+- **WebClient**: Supports backpressure and is suitable for modern, scalable applications.
+- **RestTemplate**: Synchronous and blocking, not suitable for handling large streams of data.
+- **Best Practices**: Use WebClient for new applications requiring scalability and performance.

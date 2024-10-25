@@ -7,23 +7,41 @@ tags:
 - AI
 ---
 
+
+- [Introduction to 5 AI Generation Models](#introduction-to-5-ai-generation-models)
+  - [1. Variational Autoencoders (VAE)](#1-variational-autoencoders-vae)
+    - [How VAE Works:](#how-vae-works)
+    - [Example Diagram:](#example-diagram)
+    - [Python Code Example:](#python-code-example)
+  - [2. Generative Adversarial Networks (GAN)](#2-generative-adversarial-networks-gan)
+    - [How GAN Works:](#how-gan-works)
+    - [Example Diagram:](#example-diagram-1)
+    - [Python Code Example:](#python-code-example-1)
+  - [3. Autoregressive Models (AR)](#3-autoregressive-models-ar)
+    - [How AR Works:](#how-ar-works)
+    - [Example Diagram (Transformer):](#example-diagram-transformer)
+    - [Python Code Example (Using AR):](#python-code-example-using-ar)
+  - [4. Flow Models](#4-flow-models)
+    - [How Flow Models Work:](#how-flow-models-work)
+    - [Example Diagram:](#example-diagram-2)
+    - [Python Code Example:](#python-code-example-2)
+  - [5. Diffusion Models](#5-diffusion-models)
+    - [How Diffusion Models Work:](#how-diffusion-models-work)
+    - [Example Diagram:](#example-diagram-3)
+    - [Python Code Example:](#python-code-example-3)
+  - [Conclusion](#conclusion)
+    - [Key Takeaways:](#key-takeaways)
+
+---
+
 # Introduction to 5 AI Generation Models
 
 In this article, we will explore some of the most common AI models used for generating data, images, or other types of content. These models use deep learning techniques and are called **generative models** because they create new data based on the patterns they have learned. We will cover the following models:
 
 ---
 
-## Index
-
-1. [Variational Autoencoders (VAE)](#1-variational-autoencoders-vae)
-2. [Generative Adversarial Networks (GAN)](#2-generative-adversarial-networks-gan)
-3. [Autoregressive Models (AR)](#3-autoregressive-models-ar)
-4. [Flow Models](#4-flow-models)
-5. [Diffusion Models](#5-diffusion-models)
-
----
-
 ## 1. Variational Autoencoders (VAE)
+<a name="1-variational-autoencoders-vae"></a>
 
 **VAE** is a type of generative model that learns to compress data into a smaller format and then decompress it back to its original form. Unlike a normal autoencoder, VAE introduces randomness, allowing it to generate new data that looks like the original data but is slightly different.
 
@@ -115,6 +133,7 @@ vae = tf.keras.Model(input_img, output_img)
 ---
 
 ## 2. Generative Adversarial Networks (GAN)
+<a name="2-generative-adversarial-networks-gan"></a>
 
 **GAN** is a generative model consisting of two parts: a **generator** and a **discriminator**. The generator tries to create fake data, and the discriminator tries to detect whether the data is real or fake. Over time, the generator gets better at fooling the discriminator.
 
@@ -208,6 +227,7 @@ gan = tf.keras.Model(gan_input, validity)
 ---
 
 ## 3. Autoregressive Models (AR)
+<a name="3-autoregressive-models-ar"></a>
 
 **Autoregressive Models** predict the next data point based on previous data points. For example, in language models like **Transformers**, the model predicts the next word in a sentence based on the words that came before it.
 
@@ -280,6 +300,7 @@ model.fit(X, y, epochs=10)
 ---
 
 ## 4. Flow Models
+<a name="4-flow-models"></a>
 
 **Flow Models** are generative models that work by learning how to reverse a complex transformation back to a simple distribution, like a Gaussian distribution. They are designed to model complex data distributions.
 
@@ -336,6 +357,7 @@ print(samples)
 ---
 
 ## 5. Diffusion Models
+<a name="5-diffusion-models"></a>
 
 **Diffusion Models** generate data by slowly adding random noise to a dataset and then learning to reverse the process. These models are great for creating realistic images from noise.
 
@@ -413,6 +435,15 @@ print(noisy_X)
 ---
 
 ## Conclusion
+<a name="conclusion"></a>
 
 Each of these models serves a different purpose in the field of AI. **VAE** and **GAN** are great for image generation, while **AR** models excel in sequential data like language or time series. **Flow** and **Diffusion** models are newer but powerful tools for generating complex, realistic data. Learning about these models can help you understand how machines can create art, music, text, and more!
 
+### Key Takeaways:
+- **VAE**: Generates new data by introducing randomness in the latent space.
+- **GAN**: Uses adversarial training to improve the quality of generated data.
+- **AR**: Predicts future data points based on past information.
+- **Flow Models**: Transform simple distributions into complex ones using invertible transformations.
+- **Diffusion Models**: Generate data by reversing a diffusion process that adds noise.
+
+By mastering these techniques, you can build robust and creative AI systems that generate high-quality content.
