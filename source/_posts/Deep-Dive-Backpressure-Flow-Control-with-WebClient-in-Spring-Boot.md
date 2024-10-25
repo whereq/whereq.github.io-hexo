@@ -17,8 +17,10 @@ tags:
     - [Code Example:](#code-example)
 - [5. Backpressure Strategies in WebClient](#5-backpressure-strategies-in-webclient)
   - [Strategy 1: `limitRate`](#strategy-1-limitrate)
-  - [Strategy 2: Using `Flux.window()`](#strategy-2-using-fluxwindow)
-  - [Strategy 3: Combining `flatMap` with Concurrency](#strategy-3-combining-flatmap-with-concurrency)
+  - [Strategy 2: `onBackpressureBuffer`](#strategy-2-onbackpressurebuffer)
+  - [Strategy 3: `onBackpressureDrop`](#strategy-3-onbackpressuredrop)
+  - [Strategy 4: Using `Flux.window()`](#strategy-4-using-fluxwindow)
+  - [Strategy 5: Combining `flatMap` with Concurrency](#strategy-5-combining-flatmap-with-concurrency)
 - [6. Diagrams](#6-diagrams)
   - [Diagram 1: Basic Backpressure Flow](#diagram-1-basic-backpressure-flow)
   - [Diagram 2: Streaming Data with Concurrency and Backpressure](#diagram-2-streaming-data-with-concurrency-and-backpressure)
@@ -114,8 +116,26 @@ This limits the number of items requested and processed at a time.
 
 ---
 
-<a name="strategy-2-using-fluxwindow"></a> 
-### Strategy 2: Using `Flux.window()`
+<a name="strategy-2-onbackpressurebuffer"></a> 
+### Strategy 2: `onBackpressureBuffer` 
+The `onBackpressureBuffer` operator buffers data when backpressure occurs, until the downstream can handle it.
+```java
+Flux.range(1, 1000)
+    .onBackpressureBuffer(50)
+    .subscribe(System.out::println);
+```
+
+<a name="strategy-3-onbackpressuredrop"></a> 
+### Strategy 3: `onBackpressureDrop` 
+The `onBackpressureDrop` operator discards data when backpressure occurs to prevent downstream overload.
+```java
+Flux.range(1, 1000)
+    .onBackpressureDrop()
+    .subscribe(System.out::println);
+```
+
+<a name="strategy-4-using-fluxwindow"></a> 
+### Strategy 4: Using `Flux.window()`
 
 Another method is using **`window()`**, which batches items into smaller chunks for processing.
 
@@ -135,8 +155,8 @@ This groups items into windows of 10 before processing, providing an additional 
 
 ---
 
-<a name="sstrategy-3-combining-flatmap-with-concurrency"></a> 
-### Strategy 3: Combining `flatMap` with Concurrency
+<a name="sstrategy-5-combining-flatmap-with-concurrency"></a> 
+### Strategy 5: Combining `flatMap` with Concurrency
 
 For more complex backpressure control, you can combine `flatMap()` with concurrency settings. This allows concurrent processing of items with backpressure.
 
