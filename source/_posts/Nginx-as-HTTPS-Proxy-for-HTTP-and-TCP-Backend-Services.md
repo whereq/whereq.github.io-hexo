@@ -1,12 +1,12 @@
 ---
 title: Nginx as HTTPS Proxy for HTTP and TCP Backend Services
 date: 2024-10-27 17:33:02
+categories:
+- Nginx
 tags:
 - Nginx
 ---
 
-
-# Configuring NGINX as HTTPS Proxy for HTTP and TCP Backend Services
 
 ## Overview
 
