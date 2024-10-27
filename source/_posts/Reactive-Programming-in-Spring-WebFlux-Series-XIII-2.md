@@ -13,8 +13,7 @@ tags:
 - Reactive
 ---
 
-
-- [Integration with Microservices Architecture](#integration-with-microservices-architecture)
+- [Deep Dive: Integrating Spring WebFlux with Microservices Architecture](#deep-dive-integrating-spring-webflux-with-microservices-architecture)
   - [Introduction](#introduction)
   - [Microservices Architecture Overview](#microservices-architecture-overview)
   - [Integrating Spring WebFlux with Microservices](#integrating-spring-webflux-with-microservices)
@@ -34,18 +33,30 @@ tags:
     - [Adding Dependencies](#adding-dependencies-3)
     - [Configuring Circuit Breaker](#configuring-circuit-breaker)
     - [Using Circuit Breaker](#using-circuit-breaker)
+    - [Diagram](#diagram)
+    - [Real-Life Production Use Cases](#real-life-production-use-cases)
+      - [Use Case 1: E-commerce Platform](#use-case-1-e-commerce-platform)
+      - [Example: Order Service Communicating with Product Service](#example-order-service-communicating-with-product-service)
+      - [Use Case 2: Financial Services](#use-case-2-financial-services)
+      - [Example: Transaction Service with Circuit Breaker](#example-transaction-service-with-circuit-breaker)
+  - [Sample Code](#sample-code)
+    - [Service Registration and Discovery](#service-registration-and-discovery-1)
+    - [API Gateway](#api-gateway-1)
+    - [Client-Side Load Balancing](#client-side-load-balancing-1)
+    - [Using `WebClient` to Call Different Services](#using-webclient-to-call-different-services)
+    - [Circuit Breaker](#circuit-breaker-1)
   - [Conclusion](#conclusion)
 
 ---
 
-# Integration with Microservices Architecture
+# Deep Dive: Integrating Spring WebFlux with Microservices Architecture
 
 ---
 
 <a name="introduction"></a>
 ## Introduction
 
-In the previous twelve articles, we have delved into the foundational concepts of Spring WebFlux, Reactor, error handling, data stream transformations, reactive database access, performance optimization, security, testing, deployment and operations, as well as best practices and common pitfalls. This article will focus on integrating Spring WebFlux with microservices architecture to build high-performance, scalable distributed systems.
+In the previous articles, we have delved into the foundational concepts of Spring WebFlux, Reactor, error handling, data stream transformations, reactive database access, performance optimization, security, testing, deployment and operations, as well as best practices and common pitfalls. This article will focus on integrating Spring WebFlux with microservices architecture to build high-performance, scalable distributed systems.
 
 <a name="microservices-architecture-overview"></a>
 ## Microservices Architecture Overview
@@ -141,6 +152,14 @@ Configure routes in `application.properties`:
 spring.cloud.gateway.routes[0].id=book-service
 spring.cloud.gateway.routes[0].uri=lb://book-service
 spring.cloud.gateway.routes[0].predicates[0]=Path=/books/**
+
+spring.cloud.gateway.routes[1].id=user-service
+spring.cloud.gateway.routes[1].uri=lb://user-service
+spring.cloud.gateway.routes[1].predicates[0]=Path=/users/**
+
+spring.cloud.gateway.routes[2].id=order-service
+spring.cloud.gateway.routes[2].uri=lb://order-service
+spring.cloud.gateway.routes[2].predicates[0]=Path=/orders/**
 ```
 
 <a name="client-side-load-balancing"></a>
@@ -180,6 +199,34 @@ import org.springframework.web.reactive.function.client.WebClient;
 @LoadBalanced
 public WebClient.Builder loadBalancedWebClientBuilder() {
     return WebClient.builder();
+}
+```
+
+When you make a request using the `WebClient.Builder`, you typically specify the service name in the URI (e.g., `http://book-service/books`). The `@LoadBalanced` annotation tells Spring Cloud LoadBalancer to intercept this request and resolve the service name (`book-service`) to the actual service instances.
+
+```java
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
+
+@Service
+public class BookService {
+
+    private final WebClient.Builder webClientBuilder;
+
+    @Autowired
+    public BookService(WebClient.Builder webClientBuilder) {
+        this.webClientBuilder = webClientBuilder;
+    }
+
+    public Mono<Book> getBookById(Long id) {
+        return webClientBuilder.build()
+            .get()
+            .uri("http://book-service/books/{id}", id)
+            .retrieve()
+            .bodyToMono(Book.class);
+    }
 }
 ```
 
@@ -223,9 +270,173 @@ import reactor.core.publisher.Mono;
 public class BookService {
 
     private final ReactiveCircuitBreakerFactory circuitBreakerFactory;
+    private final BookRepository bookRepository;
 
-    public BookService(ReactiveCircuitBreakerFactory circuitBreakerFactory) {
+    public BookService(ReactiveCircuitBreakerFactory circuitBreakerFactory, BookRepository bookRepository) {
         this.circuitBreakerFactory = circuitBreakerFactory;
+        this.bookRepository = bookRepository;
+    }
+
+    public Mono<Book> getBookById(Long id) {
+        return bookRepository.findById(id)
+            .transform(it -> circuitBreakerFactory.create("bookService").run(it, throwable -> Mono.just(new Book(id, "Default Book", "Unknown", 0.0))));
+    }
+}
+```
+
+### Diagram
+
+- Client-Side: WebClient - Alternative of Spring-Cloud OpenFeign
+- API Gateway: Routes
+- BookService: Integerated CircuitBreaker(Actual Implementation is resilience4j)
+
+```
++-------------------+       +-------------------+       +-------------------+
+| Client-Side       |       | API Gateway       |       | Actual BookService|
+| MultiServiceCaller|       |                   |       |                   |
+|                   |       |                   |       |                   |
+| +-------------+   |       | +-------------+   |       | +-------------+   |
+| | WebClient   |   |       | | Routes      |   |       | | Circuit    |   |
+| |             |   |       | |             |   |       | | Breaker    |   |
+| | +---------+ |   |       | | +---------+ |   |       | | +---------+ |   |
+| | | Request | |   |       | | | Request | |   |       | | | Request | |   |
+| | +---------+ |   |       | | +---------+ |   |       | | +---------+ |   |
+| +-------------+   |       | +-------------+   |       | +-------------+   |
+|                   |       |                   |       |                   |
+|                   |       |                   |       |                   |
+|                   |       |                   |       |                   |
++-------------------+       +-------------------+       +-------------------+
+```
+
+### Real-Life Production Use Cases
+
+#### Use Case 1: E-commerce Platform
+
+In an e-commerce platform, multiple microservices interact to handle various functionalities such as product catalog, user management, and order processing. Spring WebFlux and Spring Cloud components can be used to build a scalable and resilient system.
+
+#### Example: Order Service Communicating with Product Service
+
+The Order Service needs to retrieve product details from the Product Service to process orders. Spring Cloud Gateway can be used as an API gateway to route requests, and Spring Cloud LoadBalancer can be used for client-side load balancing.
+
+#### Use Case 2: Financial Services
+
+In financial services, microservices handle transactions, account management, and reporting. Spring WebFlux can be used to build high-performance services, and Spring Cloud Circuit Breaker can be used to handle failures gracefully.
+
+#### Example: Transaction Service with Circuit Breaker
+
+The Transaction Service needs to call the Account Service to validate account balances. If the Account Service is down, the circuit breaker can return a default response to prevent system failure.
+
+<a name="sample-code"></a>
+## Sample Code
+
+### Service Registration and Discovery
+
+```java
+import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+@EnableDiscoveryClient
+public class BookServiceApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(BookServiceApplication.class, args);
+    }
+}
+```
+
+### API Gateway
+
+```properties
+spring.cloud.gateway.routes[0].id=book-service
+spring.cloud.gateway.routes[0].uri=lb://book-service
+spring.cloud.gateway.routes[0].predicates[0]=Path=/books/**
+
+spring.cloud.gateway.routes[1].id=user-service
+spring.cloud.gateway.routes[1].uri=lb://user-service
+spring.cloud.gateway.routes[1].predicates[0]=Path=/users/**
+
+spring.cloud.gateway.routes[2].id=order-service
+spring.cloud.gateway.routes[2].uri=lb://order-service
+spring.cloud.gateway.routes[2].predicates[0]=Path=/orders/**
+```
+
+### Client-Side Load Balancing
+
+```java
+import org.springframework.cloud.client.loadbalancer.LoadBalanced;
+import org.springframework.context.annotation.Bean;
+import org.springframework.web.reactive.function.client.WebClient;
+
+@Bean
+@LoadBalanced
+public WebClient.Builder loadBalancedWebClientBuilder() {
+    return WebClient.builder();
+}
+```
+
+### Using `WebClient` to Call Different Services
+
+Create a service class that uses the `WebClient.Builder` to interact with different registered services:
+
+```java
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
+
+@Service
+public class MultiServiceCaller {
+
+    private final WebClient.Builder webClientBuilder;
+
+    @Autowired
+    public MultiServiceCaller(WebClient.Builder webClientBuilder) {
+        this.webClientBuilder = webClientBuilder;
+    }
+
+    public Mono<Book> getBookById(Long id) {
+        return webClientBuilder.build()
+            .get()
+            .uri("http://book-service/books/{id}", id)
+            .retrieve()
+            .bodyToMono(Book.class);
+    }
+
+    public Mono<User> getUserById(Long id) {
+        return webClientBuilder.build()
+            .get()
+            .uri("http://user-service/users/{id}", id)
+            .retrieve()
+            .bodyToMono(User.class);
+    }
+
+    public Mono<Order> getOrderById(Long id) {
+        return webClientBuilder.build()
+            .get()
+            .uri("http://order-service/orders/{id}", id)
+            .retrieve()
+            .bodyToMono(Order.class);
+    }
+}
+```
+
+### Circuit Breaker
+
+```java
+import org.springframework.cloud.client.circuitbreaker.ReactiveCircuitBreakerFactory;
+import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
+
+@Service
+public class BookService {
+
+    private final ReactiveCircuitBreakerFactory circuitBreakerFactory;
+    private final BookRepository bookRepository;
+
+    public BookService(ReactiveCircuitBreakerFactory circuitBreakerFactory, BookRepository bookRepository) {
+        this.circuitBreakerFactory = circuitBreakerFactory;
+        this.bookRepository = bookRepository;
     }
 
     public Mono<Book> getBookById(Long id) {
@@ -238,4 +449,4 @@ public class BookService {
 <a name="conclusion"></a>
 ## Conclusion
 
-In this article, we explored how to integrate Spring WebFlux with microservices architecture using the latest Spring Cloud components. By leveraging Spring Cloud Kubernetes, Spring Cloud Gateway, Spring Cloud LoadBalancer, and Spring Cloud Circuit Breaker, we can easily build high-performance, scalable distributed systems.
+In this article, we explored how to integrate Spring WebFlux with microservices architecture using the latest Spring Cloud components. By leveraging Spring Cloud Kubernetes, Spring Cloud Gateway, Spring Cloud LoadBalancer, and Spring Cloud Circuit Breaker, we can easily build high-performance, scalable distributed systems. Real-life production use cases and sample code demonstrate the practical application of these components in building resilient and scalable microservices.
