@@ -69,10 +69,10 @@ In this schema:
 
 **Diagram: Schema Registry Workflow**
 ```
-        +-----------+            +--------------------+
-        | Producer  |   Write    |  Schema Registry   |
+        +-----------+             +--------------------+
+        | Producer  |   Write     |  Schema Registry   |
         |           | ----------> |                    |
-        +-----------+            +--------------------+
+        +-----------+             +--------------------+
             |
             |
             |    Write
@@ -171,22 +171,23 @@ Parquet organizes data in columns, allowing for efficient compression and encodi
 
 **Diagram: Parquet File Structure**
 ```
-+-----------------------------+
-|           Parquet           |
-+-----------------------------+
-|      Row Group 1            |
++------------------------------+
+|           Parquet            |
++------------------------------+
+|      Row Group 1             |
 |    +--------------------+    |
-|    | Column 1          |    |
-|    | Column 2          |    |
-|    | ...               |    |
+|    | Column 1           |    |
+|    | Column 2           |    |
+|    | ...                |    |
 |    +--------------------+    |
-|                             |
-|      Row Group 2            |
+|                              |
+|      Row Group 2             |
 |    +--------------------+    |
-|    | Column 1          |    |
-|    | Column 2          |    |
-|    | ...               |    |
-+-----------------------------+
+|    | Column 1           |    |
+|    | Column 2           |    |
+|    | ...                |    |
+|    +--------------------+    |
++------------------------------+
 ```
 
 - Each **Row Group** contains columns stored together, optimizing compression and query performance.
