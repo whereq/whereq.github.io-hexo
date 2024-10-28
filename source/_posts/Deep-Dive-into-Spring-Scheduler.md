@@ -24,7 +24,12 @@ tags:
   - [Using Cron Expressions](#using-cron-expressions)
 - [Conditional Scheduling with Annotations](#conditional-scheduling-with-annotations)
   - [Conditional Scheduling Example](#conditional-scheduling-example)
-- [Real-World Production Sample Code](#real-world-production-sample-code)
+- [All-In-One Sample](#all-in-one-sample)
+- [ConditionalOnProperty with Scheduled Job in Depth](#conditionalonproperty-with-scheduled-job-in-depth)
+  - [Scenario: Running a Scheduled Job in Only One Pod in a Kubernetes Cluster](#scenario-running-a-scheduled-job-in-only-one-pod-in-a-kubernetes-cluster)
+    - [Solution Outline](#solution-outline)
+    - [Steps to Implement](#steps-to-implement)
+    - [Additional Consideration: Use Leader Election](#additional-consideration-use-leader-election)
 - [Conclusion](#conclusion)
 
 ---
@@ -269,10 +274,8 @@ To enable or disable this task, add `scheduler.enabled=true` or `false` in the c
 
 ---
 
-<a name="real-world-production-sample-code"></a>
-## Real-World Production Sample Code
-
-Below is a production-level example that schedules multiple jobs with different timings and conditions.
+<a name="all-in-one-sample"></a>
+## All-In-One Sample
 
 ```java
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -301,7 +304,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
-@ConditionalOnProperty(name = "scheduler.run", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(name = "scheduler.enabled", havingValue = "true", matchIfMissing = true)
 public class ProductionScheduler {
 
     @Async
@@ -320,7 +323,93 @@ public class ProductionScheduler {
 }
 ```
 
----
+<a name="conditionalonproperty-with-scheduled-job-in-depth"></a>
+## ConditionalOnProperty with Scheduled Job in Depth
+The `@ConditionalOnProperty` annotation in Spring is typically used to conditionally enable or disable beans based on specific configuration properties. In this case:
+
+```java
+@ConditionalOnProperty(name = "scheduler.enabled", havingValue = "true")
+```
+
+This will activate the annotated bean only if the `scheduler.enabled` property is set to `true` in your configuration (like in `application.properties` or environment variables).
+
+### Scenario: Running a Scheduled Job in Only One Pod in a Kubernetes Cluster
+
+When deploying a Spring application in a Kubernetes cluster across multiple containers (pods), ensuring that a scheduled job only runs in one specific pod can be tricky because Spring's `@Scheduled` jobs will run in every instance where the job bean is active. Here’s how to solve this problem by using the `@ConditionalOnProperty` annotation in combination with Kubernetes configurations.
+
+#### Solution Outline
+
+1. **Set a Leader Pod**: Configure only one of the pods to have `scheduler.enabled=true` using Kubernetes annotations and environment variables, making it the leader pod responsible for running the scheduled job.
+2. **Configure Pods with Unique Environment Variables**: Use Kubernetes `configMaps` or `Secrets` to assign the `scheduler.enabled` property as `true` only in the leader pod’s environment. Other pods should not have this property set to `true`, so they won’t run the job.
+
+#### Steps to Implement
+
+1. **Create a ConfigMap or Secret for the Scheduler Property**:
+   - Define a ConfigMap that holds the `scheduler.enabled` setting for the lead pod.
+   
+   ```yaml
+   apiVersion: v1
+   kind: ConfigMap
+   metadata:
+     name: scheduler-config
+   data:
+     scheduler.enabled: "true"
+   ```
+
+2. **Use Pod Annotations to Select the Leader Pod**:
+   - When deploying multiple replicas, use a label selector or custom script to ensure only one pod is given the `scheduler.enabled=true` setting.
+
+3. **Configure the Deployment to Pass the `scheduler.enabled` Environment Variable**:
+   - In your Kubernetes Deployment file, you can use `envFrom` to load the environment variables from the ConfigMap, but with a selector so only one pod uses this ConfigMap.
+   
+   ```yaml
+   apiVersion: apps/v1
+   kind: Deployment
+   metadata:
+     name: scheduler-job
+   spec:
+     replicas: 3  # Running multiple instances
+     selector:
+       matchLabels:
+         app: scheduler-app
+     template:
+       metadata:
+         labels:
+           app: scheduler-app
+       spec:
+         containers:
+           - name: scheduler-container
+             image: your-image
+             envFrom:
+               - configMapRef:
+                   name: scheduler-config
+             env:
+               - name: POD_NAME
+                 valueFrom:
+                   fieldRef:
+                     fieldPath: metadata.name
+   ```
+
+4. **Conditional Logic in Spring Boot**:
+   - With `@ConditionalOnProperty`, the `@Scheduled` method will only activate if the `scheduler.enabled` property is `true`. So, only the pod with the `scheduler.enabled=true` environment variable will run the job.
+
+   ```java
+   @Component
+   @ConditionalOnProperty(name = "scheduler.enabled", havingValue = "true")
+   public class ScheduledJob {
+
+       @Scheduled(fixedRate = 5000)
+       public void performTask() {
+           System.out.println("Scheduled job is running on the leader pod!");
+       }
+   }
+   ```
+
+#### Additional Consideration: Use Leader Election
+
+For robust setups, you could implement leader election to dynamically select the leader pod. This can be achieved using tools like [Spring Cloud Kubernetes Leader Election](https://spring.io/projects/spring-cloud-kubernetes) or implementing a custom leader election mechanism based on a shared lock in an external data store, such as Redis or ZooKeeper.
+
+By setting `scheduler.enabled=true` conditionally based on which pod is the elected leader, you can ensure the scheduled job runs in only one container at a time, with the ability to switch seamlessly if the leader pod goes down.
 
 <a name="conclusion"></a>
 ## Conclusion
