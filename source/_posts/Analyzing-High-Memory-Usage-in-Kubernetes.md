@@ -3,8 +3,10 @@ title: Analyzing High Memory Usage in Kubernetes
 date: 2024-10-27 19:28:43
 categories:
 - Kubernetes
+- Troubleshooting
 tags:
 - Kubernetes
+- Troubleshooting
 ---
 
 - [Introduction](#introduction)
