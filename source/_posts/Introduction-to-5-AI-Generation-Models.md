@@ -51,7 +51,7 @@ In this article, we will explore some of the most common AI models used for gene
 3. **Variational**: Adds randomness (a probability distribution) to the latent space, allowing the model to generate new data.
 
 ### Example Diagram:
-![VAE Diagram](../images/Introduction-to-5-AI-Generation-Models/VAE.webp)
+![VAE Diagram](images/Introduction-to-5-AI-Generation-Models/VAE.webp)
 
 ```
 +-------------------+
@@ -143,7 +143,7 @@ vae = tf.keras.Model(input_img, output_img)
 3. **Adversarial Training**: The two networks compete, helping the generator improve.
 
 ### Example Diagram:
-![GAN Diagram](../images/Introduction-to-5-AI-Generation-Models/gan.svg)
+![GAN Diagram](images/Introduction-to-5-AI-Generation-Models/gan.svg)
 
 ```
 +-------------------+
@@ -236,7 +236,7 @@ gan = tf.keras.Model(gan_input, validity)
 - Often used in natural language processing (NLP) and time series data.
 
 ### Example Diagram (Transformer):
-![Transformer](../images/Introduction-to-5-AI-Generation-Models/Development-of-autoregressive-models-based-on-Transformer-architecture-1-basic-model.png)
+![Transformer](images/Introduction-to-5-AI-Generation-Models/Development-of-autoregressive-models-based-on-Transformer-architecture-1-basic-model.png)
 
 ```
 +-------------------+
@@ -309,7 +309,7 @@ model.fit(X, y, epochs=10)
 - They are invertible, meaning the process can be reversed easily.
 
 ### Example Diagram:
-![Flow Diagram](../images/Introduction-to-5-AI-Generation-Models/The-flow-based-generative-models.png)
+![Flow Diagram](images/Introduction-to-5-AI-Generation-Models/The-flow-based-generative-models.png)
 
 ```
 +-------------------+
@@ -366,7 +366,7 @@ print(samples)
 2. The model learns to reverse this process, removing the noise and recovering the original data.
 
 ### Example Diagram:
-![Diffusion Models](../images/Introduction-to-5-AI-Generation-Models/Diffusion-Models.png)
+![Diffusion Models](images/Introduction-to-5-AI-Generation-Models/Diffusion-Models.png)
 
 ```
 +-------------------+
