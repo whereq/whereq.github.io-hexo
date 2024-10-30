@@ -36,6 +36,7 @@ tags:
     - [Example of Thread Reuse in `SimpleThreadPool`](#example-of-thread-reuse-in-simplethreadpool)
     - [Code Example](#code-example)
     - [Key Points](#key-points)
+    - [Summary](#summary)
 
 ---
 
@@ -680,4 +681,15 @@ public class SimpleThreadPool {
 - **Task Queue**: The task queue holds tasks that are waiting to be executed. When a new task is submitted, a waiting thread is notified and picks up the task.
 - **Graceful Shutdown**: The `shutdown()` method sets the `isShutdown` flag to stop accepting new tasks and interrupts all worker threads to ensure they exit if they are waiting.
 
-In summary, threads in a thread pool do not go back to the "RUNNABLE" state from the "TERMINATED" state. Instead, they remain in a waiting state until new tasks are available, ensuring efficient reuse of thread resources.
+### Summary
+In Java’s `ThreadPoolExecutor` (or our custom pool example), the worker threads do **not** actually terminate after completing a task. Instead, they enter a **waiting** or **idle state** and wait to pick up the next task. The main goal of a thread pool is to reuse threads efficiently, keeping them alive for as long as the pool is running and ready to transition back to the **runnable** state whenever a new task becomes available. 
+
+Here's how it works:
+
+1. **Runnable → Running**: A thread in the pool becomes **running** when it starts executing a task.
+2. **Running → Waiting/Idle**: Once it finishes the task, it doesn't terminate. Instead, it returns to an **idle state** within the pool, waiting for more tasks to be added to the queue.
+3. **Waiting → Runnable**: When a new task is submitted, an idle worker transitions to **runnable** and executes the task.
+   
+The threads only reach a **terminated state** when the pool itself is **shut down** (e.g., calling `shutdown()` in `ThreadPoolExecutor`). Only then will the threads stop, exit the idle/waiting state, and go to terminated. This approach keeps the pool flexible and efficient, reducing the overhead of creating and destroying threads for every task. 
+
+So in short: threads in a thread pool **do not reach terminated after completing tasks**. They go back to idle/waiting and can accept new tasks. And threads in a thread pool do not go back to the "RUNNABLE" state from the "TERMINATED" state neither. Instead, they remain in a waiting state until new tasks are available, ensuring efficient reuse of thread resources.
