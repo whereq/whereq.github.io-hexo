@@ -2,9 +2,11 @@
 title: Best Practices of Deploying PostgreSQL in Kubernetes
 date: 2024-10-30 23:32:42
 categories:
+- Best Practices
 - Kubernetes
 - PostgreSQL
 tags:
+- Best Practices
 - Kubernetes
 - PostgreSQL
 ---
