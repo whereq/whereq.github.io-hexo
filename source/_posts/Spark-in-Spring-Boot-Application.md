@@ -27,30 +27,30 @@ tags:
   - [Step 1: Add Spark Dependencies](#step-1-add-spark-dependencies)
   - [Step 2: Configure Spark](#step-2-configure-spark)
 - [Communicating with Kafka](#communicating-with-kafka)
-  - [ Reading Avro Records from Kafka](#-reading-avro-records-from-kafka)
-  - [ Writing Data to Kafka](#-writing-data-to-kafka)
+  - [Reading Avro Records from Kafka](#reading-avro-records-from-kafka)
+  - [Reading Avro Records from Kafka with Schema Registry](#reading-avro-records-from-kafka-with-schema-registry)
+  - [Writing Data to Kafka](#writing-data-to-kafka)
+  - [Writing Avro Records to Kafka with Schema Registry](#writing-avro-records-to-kafka-with-schema-registry)
 - [Communicating with Elasticsearch](#communicating-with-elasticsearch)
-  - [ Reading JSON Data from Elasticsearch](#-reading-json-data-from-elasticsearch)
-  - [ Writing Data to Elasticsearch](#-writing-data-to-elasticsearch)
+  - [Reading JSON Data from Elasticsearch](#reading-json-data-from-elasticsearch)
+  - [Writing Data to Elasticsearch](#writing-data-to-elasticsearch)
 - [Handling Parquet Files in MinIO](#handling-parquet-files-in-minio)
-  - [ Reading Parquet Files from MinIO](#-reading-parquet-files-from-minio)
-  - [ Writing Parquet Files to MinIO](#-writing-parquet-files-to-minio)
+  - [Reading Parquet Files from MinIO](#reading-parquet-files-from-minio)
+  - [Writing Parquet Files to MinIO](#writing-parquet-files-to-minio)
 - [Using Spark DataFrame and Spark SQL](#using-spark-dataframe-and-spark-sql)
-  - [ Creating DataFrames](#-creating-dataframes)
-  - [ Querying DataFrames with Spark SQL](#-querying-dataframes-with-spark-sql)
+  - [Creating DataFrames](#creating-dataframes)
+  - [Querying DataFrames with Spark SQL](#querying-dataframes-with-spark-sql)
 - [Unit Test Cases](#unit-test-cases)
   - [KafkaServiceTest.java](#kafkaservicetestjava)
   - [ElasticsearchServiceTest.java](#elasticsearchservicetestjava)
   - [MinIOServiceTest.java](#minioservicetestjava)
   - [DataFrameServiceTest.java](#dataframeservicetestjava)
 - [Design Diagrams](#design-diagrams)
-  - [ Component Diagram](#-component-diagram)
-  - [ Sequence Diagram](#-sequence-diagram)
+  - [Component Diagram](#component-diagram)
+  - [Sequence Diagram](#sequence-diagram)
 - [Advanced Scenarios](#advanced-scenarios)
-  - [ Complex Scenario 1: Flow Control and Backpressure Handling](#-complex-scenario-1-flow-control-and-backpressure-handling)
-    - [Example](#example)
-  - [ Complex Scenario 2: Handling Large-Scale Data Processing](#-complex-scenario-2-handling-large-scale-data-processing)
-    - [Example](#example-1)
+  - [Complex Scenario 1: Flow Control and Backpressure Handling](#complex-scenario-1-flow-control-and-backpressure-handling)
+  - [Complex Scenario 2: Handling Large-Scale Data Processing](#complex-scenario-2-handling-large-scale-data-processing)
 - [Conclusion](#conclusion)
 - [References](#references)
 
@@ -59,7 +59,7 @@ tags:
 <a name="introduction"></a>
 ## Introduction
 
-This article provides a comprehensive guide to developing a Spark application with Spring Boot 3.3.5 to communicate with Kafka and Elasticsearch. The application will handle Avro records in Kafka, JSON data in Elasticsearch, and Parquet files in MinIO using Spark DataFrame and Spark SQL. The article covers the setup, integration, and advanced scenarios for handling large-scale data processing.
+This article provides a comprehensive guide to developing a Spark application with Spring Boot 3.3.5 to communicate with Kafka and Elasticsearch. The application will handle Avro records in Kafka, JSON data in Elasticsearch, and Parquet files in MinIO using Spark DataFrame and Spark SQL. The article covers the setup, integration, and advanced scenarios for handling large-scale data processing, including the use of Avro Schema Registry when communicating with Kafka.
 
 ---
 
@@ -67,12 +67,13 @@ This article provides a comprehensive guide to developing a Spark application wi
 ## Prerequisites
 
 - Java 17 or later
-- Apache Spark 3.5.x
+- Apache Spark 3.5.4
 - Spring Boot 3.3.5
 - Kafka 3.x
 - Elasticsearch 8.x
 - MinIO
 - Maven or Gradle
+- Confluent Schema Registry
 
 ---
 
@@ -134,6 +135,9 @@ spring.kafka.consumer.value-deserializer=org.apache.kafka.common.serialization.B
 spring.kafka.producer.key-serializer=org.apache.kafka.common.serialization.StringSerializer
 spring.kafka.producer.value-serializer=org.apache.kafka.common.serialization.ByteArraySerializer
 
+# Schema Registry Configuration
+schema.registry.url=http://localhost:8081
+
 # Elasticsearch Configuration
 spring.elasticsearch.rest.uris=http://localhost:9200
 
@@ -157,22 +161,27 @@ Add the following dependencies to your `pom.xml` or `build.gradle` file:
 <dependency>
     <groupId>org.apache.spark</groupId>
     <artifactId>spark-core_2.12</artifactId>
-    <version>3.5.0</version>
+    <version>3.5.4</version>
 </dependency>
 <dependency>
     <groupId>org.apache.spark</groupId>
     <artifactId>spark-sql_2.12</artifactId>
-    <version>3.5.0</version>
+    <version>3.5.4</version>
 </dependency>
 <dependency>
     <groupId>org.apache.spark</groupId>
     <artifactId>spark-avro_2.12</artifactId>
-    <version>3.5.0</version>
+    <version>3.5.4</version>
 </dependency>
 <dependency>
     <groupId>org.apache.spark</groupId>
     <artifactId>spark-sql-kafka-0-10_2.12</artifactId>
-    <version>3.5.0</version>
+    <version>3.5.4</version>
+</dependency>
+<dependency>
+    <groupId>io.confluent</groupId>
+    <artifactId>kafka-avro-serializer</artifactId>
+    <version>7.0.1</version>
 </dependency>
 ```
 
@@ -204,7 +213,8 @@ public class SparkConfig {
 <a name="communicating-with-kafka"></a>
 ## Communicating with Kafka
 
-### <a name="reading-avro-records-from-kafka"></a> Reading Avro Records from Kafka
+<a name="reading-avro-records-from-kafka"></a>
+### Reading Avro Records from Kafka
 
 To read Avro records from Kafka, use the `spark-avro` and `spark-sql-kafka-0-10` libraries:
 
@@ -233,7 +243,43 @@ public class KafkaService {
 }
 ```
 
-### <a name="writing-data-to-kafka"></a> Writing Data to Kafka
+
+<a name="reading-avro-records-from-kafka-with-schema-registry"></a>
+###  Reading Avro Records from Kafka with Schema Registry
+
+To read Avro records from Kafka using the Schema Registry, use the `spark-avro` and `spark-sql-kafka-0-10` libraries:
+
+```java
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SparkSession;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+@Service
+public class KafkaService {
+
+    @Autowired
+    private SparkSession sparkSession;
+
+    @Value("${schema.registry.url}")
+    private String schemaRegistryUrl;
+
+    public Dataset<Row> readAvroFromKafka(String topic) {
+        return sparkSession.read()
+                .format("kafka")
+                .option("kafka.bootstrap.servers", "localhost:9092")
+                .option("subscribe", topic)
+                .load()
+                .selectExpr("CAST(value AS BINARY)")
+                .select(org.apache.spark.sql.avro.functions.from_avro(col("value"), schemaRegistryUrl + "/subjects/" + topic + "-value/versions/latest"));
+    }
+}
+```
+
+<a name="writing-data-to-kafka"></a>
+### Writing Data to Kafka
 
 To write data to Kafka, use the `spark-sql-kafka-0-10` library:
 
@@ -263,10 +309,47 @@ public class KafkaService {
 
 ---
 
+<a name="writing-avro-records-to-kafka-with-schema-registry"></a>
+###  Writing Avro Records to Kafka with Schema Registry
+
+To write Avro records to Kafka using the Schema Registry, use the `spark-avro` and `spark-sql-kafka-0-10` libraries:
+
+```java
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SparkSession;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+@Service
+public class KafkaService {
+
+    @Autowired
+    private SparkSession sparkSession;
+
+    @Value("${schema.registry.url}")
+    private String schemaRegistryUrl;
+
+    public void writeAvroToKafka(Dataset<Row> dataset, String topic) {
+        dataset.select(org.apache.spark.sql.avro.functions.to_avro(struct("*")).as("value"))
+                .write()
+                .format("kafka")
+                .option("kafka.bootstrap.servers", "localhost:9092")
+                .option("topic", topic)
+                .option("schema.registry.url", schemaRegistryUrl)
+                .save();
+    }
+}
+```
+
+---
+
 <a name="communicating-with-elasticsearch"></a>
 ## Communicating with Elasticsearch
 
-### <a name="reading-json-data-from-elasticsearch"></a> Reading JSON Data from Elasticsearch
+<a name="reading-json-data-from-elasticsearch"></a>
+### Reading JSON Data from Elasticsearch
 
 To read JSON data from Elasticsearch, use the `elasticsearch-hadoop` library:
 
@@ -294,7 +377,8 @@ public class ElasticsearchService {
 }
 ```
 
-### <a name="writing-data-to-elasticsearch"></a> Writing Data to Elasticsearch
+<a name="writing-data-to-elasticsearch"></a>
+### Writing Data to Elasticsearch
 
 To write data to Elasticsearch, use the `elasticsearch-hadoop` library:
 
@@ -327,7 +411,8 @@ public class ElasticsearchService {
 <a name="handling-parquet-files-in-minio"></a>
 ## Handling Parquet Files in MinIO
 
-### <a name="reading-parquet-files-from-minio"></a> Reading Parquet Files from MinIO
+<a name="reading-parquet-files-from-minio"></a>
+### Reading Parquet Files from MinIO
 
 To read Parquet files from MinIO, use the `spark-hadoop-cloud` library:
 
@@ -356,7 +441,8 @@ public class MinIOService {
 }
 ```
 
-### <a name="writing-parquet-files-to-minio"></a> Writing Parquet Files to MinIO
+<a name="writing-parquet-files-to-minio"></a> 
+### Writing Parquet Files to MinIO
 
 To write Parquet files to MinIO, use the `spark-hadoop-cloud` library:
 
@@ -390,7 +476,8 @@ public class MinIOService {
 <a name="using-spark-dataframe-and-spark-sql"></a>
 ## Using Spark DataFrame and Spark SQL
 
-### <a name="creating-dataframes"></a> Creating DataFrames
+<a name="creating-dataframes"></a>
+### Creating DataFrames
 
 To create DataFrames, use the `SparkSession` object:
 
@@ -416,7 +503,8 @@ public class DataFrameService {
 }
 ```
 
-### <a name="querying-dataframes-with-spark-sql"></a> Querying DataFrames with Spark SQL
+<a name="querying-dataframes-with-spark-sql"></a>
+### Querying DataFrames with Spark SQL
 
 To query DataFrames using Spark SQL, register the DataFrame as a temporary view:
 
@@ -473,9 +561,9 @@ public class KafkaServiceTest {
     }
 
     @Test
-    public void testWriteToKafka() {
+    public void testWriteAvroToKafka() {
         Dataset<Row> dataset = sparkSession.read().json("path/to/json/file");
-        kafkaService.writeToKafka(dataset, "test-topic");
+        kafkaService.writeAvroToKafka(dataset, "test-topic");
     }
 }
 ```
@@ -591,7 +679,8 @@ public class DataFrameServiceTest {
 <a name="design-diagrams"></a>
 ## Design Diagrams
 
-### <a name="component-diagram"></a> Component Diagram
+<a name="component-diagram"></a>
+###  Component Diagram
 
 ```
 +-------------------+       +-------------------+       +-------------------+
@@ -617,7 +706,9 @@ public class DataFrameServiceTest {
 +--------------------+       +-------------------+       +---------------------------------------+
 ```
 
-### <a name="sequence-diagram"></a> Sequence Diagram
+<a name="sequence-diagram"></a>
+### Sequence Diagram
+
 
 ```
 +---------+       +---------+       +---------+       +---------+
@@ -658,11 +749,10 @@ public class DataFrameServiceTest {
 <a name="advanced-scenarios"></a>
 ## Advanced Scenarios
 
-### <a name="complex-scenario-1-flow-control-and-backpressure-handling"></a> Complex Scenario 1: Flow Control and Backpressure Handling
+<a name="complex-scenario-1-flow-control-and-backpressure-handling"></a>
+### Complex Scenario 1: Flow Control and Backpressure Handling
 
 In scenarios where your application needs to handle flow control and backpressure, you can use Spark's built-in mechanisms for handling large-scale data processing.
-
-#### Example
 
 ```java
 import org.apache.spark.sql.Dataset;
@@ -687,11 +777,10 @@ public class FlowControlService {
 }
 ```
 
-### <a name="complex-scenario-2-handling-large-scale-data-processing"></a> Complex Scenario 2: Handling Large-Scale Data Processing
+<a name="complex-scenario-2-handling-large-scale-data-processing"></a>
+### Complex Scenario 2: Handling Large-Scale Data Processing
 
 For large-scale data processing, use Spark's distributed processing capabilities and optimize resource usage.
-
-#### Example
 
 ```java
 import org.apache.spark.sql.Dataset;
@@ -731,5 +820,6 @@ Developing a Spark application with Spring Boot 3.3.5 to communicate with Kafka 
 3. [Apache Kafka Documentation](https://kafka.apache.org/documentation/)
 4. [Elasticsearch Documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html)
 5. [MinIO Documentation](https://docs.min.io/)
+6. [Confluent Schema Registry Documentation](https://docs.confluent.io/platform/current/schema-registry/index.html)
 
 By following these best practices, you can leverage Spark and Spring Boot to build powerful and scalable data processing applications.
