@@ -5,10 +5,12 @@ categories:
 - Deep Dive
 - ReactJS
 - Redux
+- Best Practices
 tags:
 - Deep Dive
 - ReactJS
 - Redux
+- Best Practices
 ---
 
 - [Introduction](#introduction)
