@@ -22,7 +22,7 @@ adfad
 | Dummy API Example           | [dummy.restapiexample.com](https://dummy.restapiexample.com/)       | A simple API for testing dummy data.                                        |
 | ReqRes                      | [reqres.in](https://reqres.in/)                                     | A hosted REST-API to simulate CRUD operations for testing.                  |
 | Cat Facts                   | [catfact.ninja](https://catfact.ninja/)                             | Provides random cat facts.                                                  |
-| Dog CEO API                 | [dog.ceo](https://dog.ceo/api/breeds/image/random)                  | Random dog image generator.                                                 |
+| Dog CEO API                 | [dog.ceo](https://dog.ceo/api/breeds/Image/random)                  | Random dog image generator.                                                 |
 | JSONPlaceholder             | [jsonplaceholder.typicode.com](https://jsonplaceholder.typicode.com/)| Fake API for testing and prototyping.                                       |
 | RestCountries               | [restcountries.com](https://restcountries.com/)                     | API for getting country-related information.                                |
 | PokeAPI                     | [pokeapi.co](https://pokeapi.co/)                                   | Free API for Pokémon data.                                                  |

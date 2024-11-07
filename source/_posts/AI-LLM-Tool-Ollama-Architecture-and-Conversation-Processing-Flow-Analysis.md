@@ -25,7 +25,7 @@ This article will analyze the overall architecture of `Ollama` and detail the sp
 <a name="ollama-architecture"></a>
 ## Ollama Architecture
 
-![Ollama Architecture](images/AI-LLM-Tool-Ollama-Architecture-and-Conversation-Processing-Flow-Analysis/image-1.png)
+![Ollama Architecture](images/AI-LLM-Tool-Ollama-Architecture-and-Conversation-Processing-Flow-Analysis/Image-1.png)
 
 `Ollama` employs a classic CS (Client-Server) architecture, where:
 
@@ -44,7 +44,7 @@ The `Ollama Server` consists of two core components:
 <a name="ollama-storage-structure"></a>
 ## Ollama Storage Structure
 
-![Ollama Storage Architecture](images/AI-LLM-Tool-Ollama-Architecture-and-Conversation-Processing-Flow-Analysis/image-2.png)
+![Ollama Storage Architecture](images/AI-LLM-Tool-Ollama-Architecture-and-Conversation-Processing-Flow-Analysis/Image-2.png)
 
 `Ollama` uses the default local storage folder path `$HOME/.ollama`. The file structure is as follows:
 
@@ -67,7 +67,7 @@ Files can be categorized into three types:
 
 The metadata files, such as `models/manifests/registry.ollama.ai/library/llama3.2/latest`, contain the following content:
 
-![llama3.2-latest](images/AI-LLM-Tool-Ollama-Architecture-and-Conversation-Processing-Flow-Analysis/image-3.png)
+![llama3.2-latest](images/AI-LLM-Tool-Ollama-Architecture-and-Conversation-Processing-Flow-Analysis/Image-3.png)
 
 ```json
 {
@@ -85,7 +85,7 @@ As shown above, `manifests` files are in JSON format and draw inspiration from t
 <a name="ollama-conversation-processing-flow"></a>
 ## Ollama Conversation Processing Flow
 
-![Ollama Conversation Processing Flow](images/AI-LLM-Tool-Ollama-Architecture-and-Conversation-Processing-Flow-Analysis/image-4.png)
+![Ollama Conversation Processing Flow](images/AI-LLM-Tool-Ollama-Architecture-and-Conversation-Processing-Flow-Analysis/Image-4.png)
 
 The general flow of a user conversation with `Ollama` is as follows:
 

@@ -62,7 +62,7 @@ Our primary focus will be on the core of the conversation system.
                 +--------------+
 ```
 
-![Core Dialogue Flow](images/Building-a-ChatGPT-like-System/image-1.png)
+![Core Dialogue Flow](images/Building-a-ChatGPT-like-System/Image-1.png)
 
 In this basic system framework:
 - The **web interface** interacts with users, 
@@ -105,7 +105,7 @@ To address this, we need some essential modifications.
                 +--------------+
 ```
 
-![Enhanced System with Session ahdn History Management](images/Building-a-ChatGPT-like-System/image-2.png)
+![Enhanced System with Session ahdn History Management](images/Building-a-ChatGPT-like-System/Image-2.png)
 
 In this setup, we introduce a **database component** to store user sessions and historical messages.
 
@@ -201,7 +201,7 @@ One approach to scalability is implementing a **cache** to avoid repeated infere
          +--------------------------+
 ```
 
-![Cache with Vector Embeddings for Similar Query Detection](images/Building-a-ChatGPT-like-System/image-3.png)
+![Cache with Vector Embeddings for Similar Query Detection](images/Building-a-ChatGPT-like-System/Image-3.png)
 
 
 Apart from the **cache module**, we add **embedding runtime** and a **text embedding model** to convert text into **vectors**. If two vectors are close, their text content is semantically similar. **Vector storage and search** modules are used to store and retrieve vectors.
@@ -245,7 +245,7 @@ After data analysis and validation, decide if cache implementation is beneficial
          +--------------------------+
 ```
 
-![Load Balanced System Architecture with Elastic Scaling](images/Building-a-ChatGPT-like-System/image-4.png)
+![Load Balanced System Architecture with Elastic Scaling](images/Building-a-ChatGPT-like-System/Image-4.png)
 
 Here, we introduce a **gateway** for load balancing. The **inference runtime** is also stateless and supports elastic scaling, but it requires more hardware resources and may respond slower than the server. To maintain stability under peak load, add a **message queue (MQ)** and change request handling to asynchronous, improving system resilience.
 
