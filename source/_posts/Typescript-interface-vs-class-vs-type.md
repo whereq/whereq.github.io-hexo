@@ -1,10 +1,10 @@
 ---
-title: Typescript interface vs class vs type
+title: TypeScript interface vs class vs type
 date: 2024-12-09 10:23:53
 categories:
-- Typescript
+- TypeScript
 tags:
-- Typescript
+- TypeScript
 ---
 
 In TypeScript, `interface`, `class`, and `type` are all used to define the shape of objects, but they serve different purposes and have different use cases. Let's delve into each of them in detail, including real-world scenarios with sample code, and discuss their pros and cons.
