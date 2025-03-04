@@ -545,7 +545,18 @@ export default {
 ---
 
 ## 8. Building and Deploying the Theme
-
+**Make sure you added the command `build-keycloak-theme` in package.json
+```json (package.json)
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "build-keycloak-theme": "npm run build && keycloakify build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
+  },
+```
 ### Building the Theme
 Run the following command to build the theme:
 ```bash
@@ -554,9 +565,9 @@ yarn build-keycloak-theme
 
 ### Generating the JAR File
 1. Package the theme into a JAR file:
-   ```bash
-   yarn keycloakify build
-   ```
+```bash
+yarn keycloakify build
+```
 
 2. The JAR file will be generated in the `build/keycloak-theme` directory.
 
