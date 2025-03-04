@@ -10,12 +10,6 @@ tags:
 - Keycloakify
 ---
 
-# Developing a Customized Keycloak Theme with Keycloakify
-
-This guide provides a comprehensive walkthrough for creating a fully customized Keycloak theme using **Keycloakify**, with a tech stack consisting of **Yarn**, **React.js**, **TypeScript**, **Vite**, **Tailwind CSS**, and the **Open Sans** font family. We'll also cover how to implement a **dark theme**, use **Storybook** for local testing, and deploy the theme to Keycloak. By the end of this guide, you'll have a modern, responsive, and customizable Keycloak theme.
-
----
-
 ## Table of Contents
 1. [Introduction](#1-introduction)
    - [What is Keycloakify?](#what-is-keycloakify)
@@ -314,6 +308,7 @@ Update `index.html`:
 
 3. Create a CSS file (`src/index.css`) and add Tailwind directives:
    ```css
+   @import "tailwindcss";
    @tailwind base;
    @tailwind components;
    @tailwind utilities;
@@ -321,16 +316,32 @@ Update `index.html`:
 
 4. Import the CSS file in `src/main.tsx`:
    ```tsx
-   import React from "react";
-   import ReactDOM from "react-dom/client";
-   import App from "./App";
+   import { createRoot } from "react-dom/client";
+   import { lazy, StrictMode, Suspense } from "react";
+   import { KcPage, type KcContext } from "./keycloak-theme/kc.gen";
+
    import "./index.css";
 
-   ReactDOM.createRoot(document.getElementById("root")!).render(
-     <React.StrictMode>
-       <App />
-     </React.StrictMode>
+   // Lazy load the MainApp component
+   const AppEntrypoint = lazy(() => import("./main.app"));
+
+   createRoot(document.getElementById("root")!).render(
+     <StrictMode>
+       {!window.kcContext ? (
+         <Suspense fallback={<div>Loading...</div>}>
+           <AppEntrypoint />
+         </Suspense>
+       ) : (
+         <KcPage kcContext={window.kcContext} />
+       )}
+     </StrictMode>
    );
+
+   declare global {
+     interface Window {
+       kcContext?: KcContext;
+     }
+   }
    ```
 
 ### Setting Up the Open Sans Font
@@ -556,17 +567,88 @@ You can add custom pages (e.g., a custom error page) by ejecting and modifying t
 npx keycloakify eject-page error
 ```
 
+This will generate the necessary files for the error page in the `src/keycloak-theme` directory. You can then customize the page as needed.
+
+---
+
 ### Theming Keycloak Emails
-Keycloakify also supports customizing email templates. Eject and modify the email templates as needed.
+Keycloakify also supports customizing email templates. To customize email templates:
+
+1. Eject the email template you want to modify:
+   ```bash
+   npx keycloakify eject-email <email-template-name>
+   ```
+
+   Replace `<email-template-name>` with the name of the email template (e.g., `verify-email`, `password-reset`).
+
+2. Customize the ejected email template in the `src/keycloak-theme` directory.
+
+---
 
 ### Localization and Internationalization
-Use Keycloak's built-in localization features to support multiple languages.
+Keycloak supports multiple languages out of the box. To add localization to your theme:
+
+1. Add language files to the `src/keycloak-theme/messages` directory. For example:
+   - `messages_en.properties` for English
+   - `messages_fr.properties` for French
+
+2. Use the `msg()` function in your components to display localized text:
+   ```tsx
+   const Login = () => {
+     const { msg } = useI18n();
+
+     return (
+       <div>
+         <h1>{msg("loginTitle")}</h1>
+         <p>{msg("loginDescription")}</p>
+       </div>
+     );
+   };
+   ```
+
+3. Add translations to your language files:
+   ```properties
+   # messages_en.properties
+   loginTitle=Login
+   loginDescription=Please enter your credentials.
+
+   # messages_fr.properties
+   loginTitle=Connexion
+   loginDescription=Veuillez entrer vos identifiants.
+   ```
 
 ---
 
 ## 10. Troubleshooting
 
 ### Common Issues and Fixes
-- **Tailwind CSS Not Working**: Ensure `postcss.config.js` and `tailwind.config.js` are correctly configured.
-- **Font Not Loading**: Verify the font import path in `index.css`.
-- **Dark Mode Not Applying**: Ensure `darkMode:
+- **Tailwind CSS Not Working**:
+  - Ensure `postcss.config.js` and `tailwind.config.js` are correctly configured.
+  - Verify that the `@import "tailwindcss";` directive is included in `src/index.css`.
+
+- **Font Not Loading**:
+  - Verify the font import path in `index.css`.
+  - Ensure the `@fontsource/open-sans` package is installed.
+
+- **Dark Mode Not Applying**:
+  - Ensure `darkMode: "class"` is set in `tailwind.config.js`.
+  - Verify that the `dark` class is applied to the root element (e.g., `<html>`).
+
+- **Storybook Not Rendering Components**:
+  - Ensure the `staticDirs` configuration in `.storybook/main.ts` points to the `public` directory.
+  - Verify that the `index.css` file is imported in your components.
+
+- **Keycloakify Build Fails**:
+  - Ensure the `keycloak-theme` directory exists and contains valid theme files.
+  - Check for errors in the terminal output and resolve them.
+
+---
+
+## 11. Conclusion
+
+By following this guide, you've created a fully customized Keycloak theme using **Keycloakify**, **React.js**, **TypeScript**, **Vite**, **Tailwind CSS**, and the **Open Sans** font. You've also implemented a **dark theme**, tested the theme locally with **Storybook**, and deployed it to **Keycloak**. This approach ensures a modern and streamlined workflow for creating custom Keycloak themes.
+
+### Key Takeaways
+- **Keycloakify** simplifies the process of building and deploying Keycloak themes.
+- **Tailwind CSS** and **Storybook** enable rapid development and testing of your theme.
+- **Localization** and **custom pages** allow you to tailor the theme to your application's needs.
