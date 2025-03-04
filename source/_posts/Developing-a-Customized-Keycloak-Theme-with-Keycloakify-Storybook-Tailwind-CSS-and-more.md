@@ -315,40 +315,53 @@ Update `index.html`:
    ```
 
 4. Import the CSS file in `src/main.tsx`:
-   ```tsx
-   import { createRoot } from "react-dom/client";
-   import { lazy, StrictMode, Suspense } from "react";
-   import { KcPage, type KcContext } from "./keycloak-theme/kc.gen";
+```tsx
+import { createRoot } from "react-dom/client";
+import { lazy, StrictMode, Suspense } from "react";
+import { KcPage, type KcContext } from "./keycloak-theme/kc.gen";
 
-   import "./index.css";
+import "./index.css";
 
-   // Lazy load the MainApp component
-   const AppEntrypoint = lazy(() => import("./main.app"));
+// Lazy load the MainApp component
+const AppEntrypoint = lazy(() => import("./main.app"));
 
-   createRoot(document.getElementById("root")!).render(
-     <StrictMode>
-       {!window.kcContext ? (
-         <Suspense fallback={<div>Loading...</div>}>
-           <AppEntrypoint />
-         </Suspense>
-       ) : (
-         <KcPage kcContext={window.kcContext} />
-       )}
-     </StrictMode>
-   );
+// The following block can be uncommented to test a specific page with `yarn dev`
+// Don't forget to comment back or your bundle size will increase
+/*
+import { getKcContextMock } from "./login/KcPageStory";
 
-   declare global {
-     interface Window {
-       kcContext?: KcContext;
-     }
-   }
-   ```
+if (import.meta.env.DEV) {
+    window.kcContext = getKcContextMock({
+        pageId: "register.ftl",
+        overrides: {}
+    });
+}
+*/
+
+createRoot(document.getElementById("root")!).render(
+  <StrictMode>
+    {!window.kcContext ? (
+      <Suspense fallback={<div>Loading...</div>}>
+        <AppEntrypoint />
+      </Suspense>
+    ) : (
+      <KcPage kcContext={window.kcContext} />
+    )}
+  </StrictMode>
+);
+
+declare global {
+  interface Window {
+    kcContext?: KcContext;
+  }
+}
+```
 
 ### Setting Up the Open Sans Font
 1. Install the Open Sans font:
-   ```bash
-   yarn add @fontsource/open-sans
-   ```
+```bash
+yarn add @fontsource/open-sans
+```
 
 2. Import the font in `src/index.css`:
    ```css
@@ -408,42 +421,36 @@ Update `index.html`:
 
 ### Customizing Keycloak Pages
 1. Eject a Keycloak page (e.g., login page):
-   ```bash
-   npx keycloakify eject-page login
-   ```
+```bash
+npx keycloakify eject-page login
+```
 
 2. Customize the ejected page (`src/pages/Login.tsx`):
-   ```tsx
-   const Login = () => {
-     return (
-       <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
-         <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg w-96">
-           <h1 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Login</h1>
-           <form>
-             <input
-               type="text"
-               placeholder="Username"
-               className="w-full p-2 mb-4 border rounded-lg dark:bg-gray-700 dark:text-white"
-             />
-             <input
-               type="password"
-               placeholder="Password"
-               className="w-full p-2 mb-4 border rounded-lg dark:bg-gray-700 dark:text-white"
-             />
-             <button
-               type="submit"
-               className="w-full bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700"
-             >
-               Log In
-             </button>
-           </form>
-         </div>
-       </div>
-     );
-   };
-
-   export default Login;
-   ```
+**Replace the original submit button (kcButtonClass) with tailwindcss button**
+```tsx
+<div id="kc-form-buttons" className={kcClsx("kcFormGroupClass")}>
+  <input type="hidden" id="id-hidden-input" name="credentialId" value={auth.selectedCredential} />
+  {/* <input
+      tabIndex={7}
+      disabled={isLoginButtonDisabled}
+      className={kcClsx("kcButtonClass", "kcButtonPrimaryClass", "kcButtonBlockClass", "kcButtonLargeClass")}
+      name="login"
+      id="kc-login"
+      type="submit"
+      value={msgStr("doLogIn")}
+  /> */}
+  <button
+    tabIndex={7}
+    disabled={isLoginButtonDisabled}
+    className="w-full px-4 py-2 text-white bg-gray-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+    name="login"
+    id="kc-login"
+    type="submit"
+    >
+    {msgStr("doLogIn")}
+  </button>
+</div>
+```
 
 ---
 
