@@ -10,7 +10,6 @@ tags:
 - Keycloakify
 ---
 
-## Table of Contents
 1. [Introduction](#1-introduction)
    - [What is Keycloakify?](#what-is-keycloakify)
    - [Why Customize Keycloak Themes?](#why-customize-keycloak-themes)
@@ -50,7 +49,7 @@ tags:
    - [Localization and Internationalization](#localization-and-internationalization)
 10. [Troubleshooting](#10-troubleshooting)
     - [Common Issues and Fixes](#common-issues-and-fixes)
-11. [Conclusion](#11-conclusion)
+
 
 ---
 
@@ -78,9 +77,9 @@ Customizing Keycloak themes allows you to:
 ### Setting Up the Development Environment
 1. Install Node.js: [Download Node.js](https://nodejs.org/)
 2. Install Yarn (if not already installed):
-   ```bash
-   npm install -g yarn
-   ```
+```bash
+npm install -g yarn
+```
 
 ---
 
@@ -88,15 +87,11 @@ Customizing Keycloak themes allows you to:
 
 ### Initialize a Vite + React + TypeScript Project
 1. Create a new project using Vite:
-   ```bash
-   yarn create vite keycloakify-poc --template react-ts
-   cd keycloakify-poc
-   ```
+```bash
+yarn create vite keycloakify-poc --template react-ts
+cd keycloakify-poc
+```
 
-2. Install dependencies:
-   ```bash
-   yarn install
-   ```
 
 ### Install Required Dependencies
 Install additional dependencies for Tailwind CSS, Open Sans, Storybook, and dark theme support:
@@ -114,14 +109,14 @@ yarn add @fontsource/open-sans
 
 ### Initialize Storybook
 1. Initialize Storybook:
-   ```bash
-   npx storybook init
-   ```
+```bash
+npx storybook init
+```
 
 2. Start Storybook:
-   ```bash
-   yarn storybook
-   ```
+```bash
+yarn storybook
+```
 
 ### Configure Storybook
 Ensure Storybook is configured to serve static files from the `public` directory. Update `.storybook/main.ts`:
@@ -157,28 +152,26 @@ export default config;
 ### Create the `src/keycloak-theme` Directory
 Keycloakify expects a `keycloak-theme` directory in your `src` folder. This directory will contain all the theme-related files.
 
-```bash
-mkdir src/keycloak-theme
-```
+The `keycloak-theme` directory will be created in the next step
 
 ### Migrate the Source Code from Keycloakify Starter
 To scaffold your project, you can use the **Keycloakify Starter** repository as a template.
 
 1. Clone the Keycloakify Starter repository into a temporary directory:
-   ```bash
-   git clone https://github.com/keycloakify/keycloakify-starter tmp
-   ```
+```bash
+git clone https://github.com/keycloakify/keycloakify-starter tmp
+```
 
 2. Move the `src` folder from the cloned repository into your project's `src/keycloak-theme` directory:
-   ```bash
-   mv tmp/src src/keycloak-theme
-   ```
+```bash
+mv tmp/src src/keycloak-theme
+```
 
 3. Clean up the temporary directory:
-   ```bash
-   rm -rf tmp
-   rm src/keycloak-theme/vite-env.d.ts
-   ```
+```bash
+rm -rf tmp
+rm src/keycloak-theme/vite-env.d.ts
+```
 
 ### Rename `src/main.tsx` to `src/main.app.tsx`
 The `main.tsx` file is the entry point for your application. Rename it to `main.app.tsx` to avoid conflicts with Keycloakify's `main.tsx`.
@@ -306,15 +299,46 @@ Update `index.html`:
    };
    ```
 
-3. Create a CSS file (`src/index.css`) and add Tailwind directives:
-   ```css
-   @import "tailwindcss";
-   @tailwind base;
-   @tailwind components;
-   @tailwind utilities;
-   ```
+3. Update `vite.config.ts` with the `tailwindcss` and `keycloakify` plugin
+### `vite.config.ts`
+```typescript
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
+import { keycloakify } from "keycloakify/vite-plugin";
 
-4. Import the CSS file in `src/main.tsx`:
+export default defineConfig({
+  plugins: [
+    react(),
+    tailwindcss(),
+    keycloakify({
+      accountThemeImplementation: "none",
+    }),
+  ],
+});
+```
+
+
+4. Create a CSS file (`src/index.css`) and add Tailwind directives:
+```css
+@import "tailwindcss";
+
+@import "@fontsource/open-sans";
+
+body {
+  font-family: "Open Sans", sans-serif;
+}
+
+@layer components {
+  .dark {
+    @apply bg-gray-900 text-white;
+  }
+}
+```
+**NOTE**: In Tailwind CSS v4 (which introduces the new tailwindcss function instead of @tailwind), so `@import "tailwindcss";` is enough 
+
+
+5. Import the CSS file in `src/main.tsx`:
 ```tsx
 import { createRoot } from "react-dom/client";
 import { lazy, StrictMode, Suspense } from "react";
@@ -364,68 +388,130 @@ yarn add @fontsource/open-sans
 ```
 
 2. Import the font in `src/index.css`:
-   ```css
-   @import "@fontsource/open-sans";
+```css
+@import "@fontsource/open-sans";
 
-   body {
-     font-family: "Open Sans", sans-serif;
-   }
-   ```
+body {
+  font-family: "Open Sans", sans-serif;
+}
+```
 
 ### Implementing a Dark Theme
 1. Enable dark mode in `tailwind.config.js`:
-   ```javascript
-   export default {
-     darkMode: "class", // or 'media' for system preference
-     content: [
-       "./index.html",
-       "./src/**/*.{js,ts,jsx,tsx}",
-     ],
-     theme: {
-       extend: {},
-     },
-     plugins: [],
-   };
-   ```
+```javascript
+export default {
+  darkMode: "class", // or 'media' for system preference
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+};
+```
 
 2. Add a theme toggle button in your React component:
-   ```tsx
-   import { useState } from "react";
+```tsx
+import { useState } from "react";
 
-   const ThemeToggle = () => {
-     const [isDark, setIsDark] = useState(false);
+const ThemeToggle = () => {
+  const [isDark, setIsDark] = useState(false);
 
-     const toggleTheme = () => {
-       setIsDark(!isDark);
-       document.documentElement.classList.toggle("dark", !isDark);
-     };
+  const toggleTheme = () => {
+    setIsDark(!isDark);
+    document.documentElement.classList.toggle("dark", !isDark);
+  };
 
-     return (
-       <button onClick={toggleTheme}>
-         {isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
-       </button>
-     );
-   };
+  return (
+    <button onClick={toggleTheme}>
+      {isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+    </button>
+  );
+};
 
-   export default ThemeToggle;
-   ```
+export default ThemeToggle;
+```
 
 3. Add dark mode styles in `src/index.css`:
-   ```css
-   @layer components {
-     .dark {
-       @apply bg-gray-900 text-white;
-     }
-   }
-   ```
+```css
+@layer components {
+  .dark {
+    @apply bg-gray-900 text-white;
+  }
+}
+```
 
 ### Customizing Keycloak Pages
-1. Eject a Keycloak page (e.g., login page):
+1. Add story 
+Choose `login.ftl`
+```bash
+npx keycloakify add-story
+```
+
+2. Eject a Keycloak page (e.g., login page):
 ```bash
 npx keycloakify eject-page login
 ```
 
-2. Customize the ejected page (`src/pages/Login.tsx`):
+3. Modify `KcPage.tsx` according to the `eject-page` command
+**Note**: Make sure import the `index.css`
+```tsx
+import { Suspense, lazy } from "react";
+import type { ClassKey } from "keycloakify/login";
+import type { KcContext } from "./KcContext";
+import { useI18n } from "./i18n";
+import DefaultPage from "keycloakify/login/DefaultPage";
+import Template from "./Template";
+import "../../index.css"
+
+const UserProfileFormFields = lazy(
+    () => import("keycloakify/login/UserProfileFormFields")
+);
+
+const doMakeUserConfirmPassword = true;
+
+const Login = lazy(() => import("./pages/Login"));
+
+export default function KcPage(props: { kcContext: KcContext }) {
+    const { kcContext } = props;
+
+    const { i18n } = useI18n({ kcContext });
+
+    return (
+        <Suspense>
+            {(() => {
+                switch (kcContext.pageId) {
+                    case "login.ftl": return (
+                        <Login
+                            {...{ kcContext, i18n, classes }}
+                            Template={Template}
+                            doUseDefaultCss={true}
+                        />
+                    );
+                    default:
+                        return (
+                            <DefaultPage
+                                kcContext={kcContext}
+                                i18n={i18n}
+                                classes={classes}
+                                Template={Template}
+                                doUseDefaultCss={true}
+                                UserProfileFormFields={UserProfileFormFields}
+                                doMakeUserConfirmPassword={doMakeUserConfirmPassword}
+                            />
+                        );
+                }
+            })()}
+        </Suspense>
+    );
+}
+
+const classes = {} satisfies { [key in ClassKey]?: string };
+```
+
+4. Customize the ejected page (`src/pages/Login.tsx`):
 **Replace the original submit button (kcButtonClass) with tailwindcss button**
 ```tsx
 <div id="kc-form-buttons" className={kcClsx("kcFormGroupClass")}>
@@ -450,6 +536,12 @@ npx keycloakify eject-page login
     {msgStr("doLogIn")}
   </button>
 </div>
+```
+
+
+5. Test
+```bash
+yarn storybook
 ```
 
 ---
@@ -593,11 +685,11 @@ This will generate the necessary files for the error page in the `src/keycloak-t
 Keycloakify also supports customizing email templates. To customize email templates:
 
 1. Eject the email template you want to modify:
-   ```bash
-   npx keycloakify eject-email <email-template-name>
-   ```
+```bash
+npx keycloakify eject-email <email-template-name>
+```
 
-   Replace `<email-template-name>` with the name of the email template (e.g., `verify-email`, `password-reset`).
+Replace `<email-template-name>` with the name of the email template (e.g., `verify-email`, `password-reset`).
 
 2. Customize the ejected email template in the `src/keycloak-theme` directory.
 
@@ -611,7 +703,7 @@ Keycloak supports multiple languages out of the box. To add localization to your
    - `messages_fr.properties` for French
 
 2. Use the `msg()` function in your components to display localized text:
-   ```tsx
+```tsx
    const Login = () => {
      const { msg } = useI18n();
 
@@ -622,7 +714,7 @@ Keycloak supports multiple languages out of the box. To add localization to your
        </div>
      );
    };
-   ```
+```
 
 3. Add translations to your language files:
    ```properties
@@ -659,14 +751,3 @@ Keycloak supports multiple languages out of the box. To add localization to your
 - **Keycloakify Build Fails**:
   - Ensure the `keycloak-theme` directory exists and contains valid theme files.
   - Check for errors in the terminal output and resolve them.
-
----
-
-## 11. Conclusion
-
-By following this guide, you've created a fully customized Keycloak theme using **Keycloakify**, **React.js**, **TypeScript**, **Vite**, **Tailwind CSS**, and the **Open Sans** font. You've also implemented a **dark theme**, tested the theme locally with **Storybook**, and deployed it to **Keycloak**. This approach ensures a modern and streamlined workflow for creating custom Keycloak themes.
-
-### Key Takeaways
-- **Keycloakify** simplifies the process of building and deploying Keycloak themes.
-- **Tailwind CSS** and **Storybook** enable rapid development and testing of your theme.
-- **Localization** and **custom pages** allow you to tailor the theme to your application's needs.
