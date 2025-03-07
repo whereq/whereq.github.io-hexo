@@ -275,19 +275,24 @@ Update `index.html`:
 
 ### Adding Tailwind CSS
 1. Create a `tailwind.config.js` file:
-   ```javascript
-   /** @type {import('tailwindcss').Config} */
-   export default {
-     content: [
-       "./index.html",
-       "./src/**/*.{js,ts,jsx,tsx}",
-     ],
-     theme: {
-       extend: {},
-     },
-     plugins: [],
-   };
-   ```
+```javascript
+/** @type {import('tailwindcss').Config} */
+export default {
+  darkMode: "class",
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  theme: {
+    extend: {
+      fontFamily: {
+        sans: ['"Open Sans"', 'sans-serif'],
+      },
+    },
+  },
+  plugins: [],
+};
+```
 
 2. Create a `postcss.config.js` file:
    ```javascript
