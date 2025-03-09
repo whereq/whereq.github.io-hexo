@@ -448,6 +448,29 @@ export default ThemeToggle;
 }
 ```
 
+### Customizing Login Page
+![Customize kc-header-wrapper clss](images/Building-a-ChatGPT-like-SystemDeveloping-a-Customized-Keycloak-Theme-with-Keycloakify-Storybook-Tailwind-CSS-and-more/kc-header-wrapper-customization.png)
+
+In this case, the issue stemmed from the `kc-header-wrapper` class, which is part of Keycloak's original default theme (`login.css`). This class had predefined styles (e.g., `padding`, `line-height`, `font-size`, etc.) that were overriding the Tailwind CSS styles applied via inline classes in the React component. The `kc-` prefixed classes are part of Keycloak's default theme, and customizing them with Tailwind CSS can be challenging because Tailwind's utility classes are often overridden by these predefined styles.
+
+**Solution**:
+- A separate CSS file (`template.css`) was created to reset the problematic properties of `#kc-header-wrapper` using `!important`. This ensured that the styles from `login.css` were overridden.
+- The `template.css` file was imported into the `Template.tsx` component to apply the reset styles.
+
+#### Final Solution Code:
+```css
+/* template.css */
+#kc-header-wrapper {
+    padding: 0 !important;
+    margin: 0 !important;
+    line-height: normal !important;
+    font-size: inherit !important;
+    text-transform: none !important;
+    letter-spacing: normal !important;
+    white-space: normal !important;
+}
+```
+
 ### Customizing Keycloak Pages
 1. Add story 
 Choose `login.ftl`
