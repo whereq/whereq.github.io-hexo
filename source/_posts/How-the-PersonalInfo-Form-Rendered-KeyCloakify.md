@@ -13,7 +13,7 @@ tags:
 1. **Component Structure**:
    - The `UserProfileFields` component is the main entry point, receiving props like `t` (translation function), `form` (React Hook Form instance), `userProfileMetadata` (attribute metadata), and others.
    - It renders a `ScrollForm` component, which takes a `sections` prop to display grouped form fields.
-
+---
 2. **Grouping Attributes**:
    - **Logic**: Inside `UserProfileFields`, `groupsWithAttributes` is computed using `useMemo`:
      - If `userProfileMetadata.attributes` is empty, it returns an empty array.
@@ -21,7 +21,7 @@ tags:
      - Groups attributes by their `group` property, including an "ungrouped" category (`{ name: undefined }`) for attributes without a group.
      - Result: An array of `GroupWithAttributes` objects, each containing a `group` and its `attributes`.
    - **Outcome**: Only groups with attributes are rendered (filtered by `.filter((group) => group.attributes.length > 0)`).
-
+---
 3. **Rendering Sections**:
    - **ScrollForm**: The `ScrollForm` component receives `sections`, where each section is an object with:
      - `title`: Derived from `group.displayHeader` or `group.name`, falling back to `t("general")`.
@@ -29,7 +29,7 @@ tags:
        - Optional group description (`<p>` with `pb-6 text-gray-700`) if `group.displayDescription` exists.
        - A list of `FormField` components, one per attribute in the group.
    - **Rendering**: `ScrollForm` likely renders these sections as collapsible or navigable panels (exact behavior depends on `ScrollForm` implementation, not shown here).
-
+---
 4. **FormField Rendering**:
    - **Logic**: The `FormField` component determines how each attribute is rendered:
      - **Special Case**: If `attribute.name === "locale"`, it renders a `LocaleSelector`.
@@ -39,7 +39,7 @@ tags:
        - Otherwise, it uses the mapped component from `FIELDS` (e.g., `TextComponent` for `"text"`, `SelectComponent` for `"select"`).
    - **Component Props**: Each `FIELDS` component receives `t`, `form`, `inputType`, `attribute`, and `renderer`.
    - **Outcome**: Each attribute is rendered as a form field (e.g., text input, select dropdown) based on its metadata.
-
+---
 5. **Field Types**:
    - **Mapping**: The `FIELDS` object maps `InputType` to components:
      - `"text"`, `"html5-*"` → `TextComponent`.
@@ -51,7 +51,7 @@ tags:
      - Root attributes (`username`, `firstName`, etc.) → `"text"`.
      - `attribute.annotations?.inputType` if valid (e.g., `"select"`, `"textarea"`).
      - Default: `"text"`.
-
+---
 6. **Visual Layout**:
    - **TailwindCSS**: `<div className="space-y-4">` adds vertical spacing between fields; `<p className="pb-6 text-gray-700">` styles group descriptions.
    - **Result**: A scrollable form with sections, each containing a group title, optional description, and a list of input fields.
@@ -128,27 +128,26 @@ return (
 1. **Form State**:
    - **Source**: The `form` prop is a `UseFormReturn<UserFormFields>` from React Hook Form, managing the form state.
    - **Type**: `UserFormFields` (from `utils.ts`) includes user properties (e.g., `username`, `email`) and an `attributes` object or array for custom fields.
-
+---
 2. **Value Retrieval**:
    - **Logic**: In `FormField`, `form.watch(fieldName(attribute.name))` retrieves the current value of each field:
      - `fieldName` (from `utils.ts`) transforms the attribute name:
        - Root attributes (`username`, `firstName`, etc.) → direct property (e.g., `"username"`).
        - Custom attributes → prefixed with `"attributes."` and dots replaced with `"🍺"` (e.g., `"attributes.my.field"` → `"attributes.my🍺field"`).
      - **Result**: `value` reflects the current form state for that attribute (e.g., `"john.doe"` for `username`, `["option1"]` for a multivalued field).
-
+---
 3. **Initial Population**:
    - **Not Shown**: The initial values aren’t set in this file. They’re likely passed to `form` via `useForm({ defaultValues })` in a parent component (e.g., a user profile editor).
    - **Assumption**: `defaultValues` would match `UserFormFields`, populated from a `UserRepresentation` object (e.g., `{ username: "john.doe", attributes: { "custom.field": "value" } }`).
-
+---
 4. **Dynamic Behavior**:
    - **Watching Values**: `form.watch` ensures the rendered component reflects real-time updates (e.g., user typing in a `TextComponent`).
    - **Multi-Valued Check**: `isMultiValue(value)` determines if the value is an array with multiple items, influencing the choice of `MultiInputComponent`.
-
+---
 5. **Component Role**:
    - **Field Components**: Each `FIELDS` component (e.g., `TextComponent`) uses `form` to register its input (via `register`, `control`, etc., not shown here) and display the `value`.
    - **Example**: For `TextComponent`, it might render `<input {...form.register(fieldName(attribute.name))} value={value} />`.
-
-
+---
 ### 2. **Field Rendering and Value Population**
 
 The `FormField` component is responsible for rendering individual form fields and populating their values. Here's how it works:
@@ -275,16 +274,20 @@ export const label = (
    - The `UserProfileFields` component groups attributes and renders them in sections using the `ScrollForm` component.
    - Each section contains fields rendered by the `FormField` component.
 
+
 2. **Field Rendering**:
    - The `FormField` component determines the input type and renders the appropriate field component (e.g., `TextComponent`, `SelectComponent`).
    - The `LocaleSelector` component is used for the `locale` attribute.
+
 
 3. **Value Population**:
    - The `form.watch` method from `react-hook-form` ensures that field values are always in sync with the form state.
    - The `fieldName` function generates the correct field name for each attribute.
 
+
 4. **Form State Management**:
    - The `react-hook-form` library manages the form state, including field registration, value updates, and validation.
+
 
 5. **Utility Functions**:
    - Functions like `fieldName` and `label` support form rendering and value population.
