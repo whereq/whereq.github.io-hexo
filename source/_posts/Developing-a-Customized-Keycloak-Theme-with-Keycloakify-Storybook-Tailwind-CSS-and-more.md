@@ -10,45 +10,48 @@ tags:
 - Keycloakify
 ---
 
-1. [Introduction](#1-introduction)
-   - [What is Keycloakify?](#what-is-keycloakify)
-   - [Why Customize Keycloak Themes?](#why-customize-keycloak-themes)
-2. [Prerequisites](#2-prerequisites)
-   - [Tools and Dependencies](#tools-and-dependencies)
-   - [Setting Up the Development Environment](#setting-up-the-development-environment)
-3. [Project Setup](#3-project-setup)
-   - [Initialize a Vite + React + TypeScript Project](#initialize-a-vite--react--typescript-project)
-   - [Install Required Dependencies](#install-required-dependencies)
-4. [Set Up Storybook for Local Testing](#4-set-up-storybook-for-local-testing)
-   - [Initialize Storybook](#initialize-storybook)
-   - [Configure Storybook](#configure-storybook)
-5. [Integrate Keycloakify with Vite](#5-integrate-keycloakify-with-vite)
-   - [Create the `src/keycloak-theme` Directory](#create-the-srckeycloak-theme-directory)
-   - [Migrate the Source Code from Keycloakify Starter](#migrate-the-source-code-from-keycloakify-starter)
-   - [Rename `src/main.tsx` to `src/main.app.tsx`](#rename-srcmaintsx-to-srcmainapptsx)
-   - [Migrate Keycloakify Starter's `main.tsx`](#migrate-keycloakify-starters-maintsx)
-   - [Update `index.html`](#update-indexhtml)
-6. [Customizing the Theme](#6-customizing-the-theme)
-   - [Adding Tailwind CSS](#adding-tailwind-css)
-   - [Setting Up the Open Sans Font](#setting-up-the-open-sans-font)
-   - [Implementing a Dark Theme](#implementing-a-dark-theme)
-   - [Customizing Keycloak Pages](#customizing-keycloak-pages)
-7. [Configuration Files](#7-configuration-files)
-   - [`vite.config.ts`](#viteconfigts)
-   - [`tailwind.config.js`](#tailwindconfigjs)
-   - [`postcss.config.js`](#postcssconfigjs)
-   - [`.eslintrc.js`](#eslintrcjs)
-   - [`tsconfig.json`](#tsconfigjson)
-8. [Building and Deploying the Theme](#8-building-and-deploying-the-theme)
-   - [Building the Theme](#building-the-theme)
-   - [Generating the JAR File](#generating-the-jar-file)
-   - [Deploying to Keycloak](#deploying-to-keycloak)
-9. [Advanced Customizations](#9-advanced-customizations)
-   - [Adding Custom Pages](#adding-custom-pages)
-   - [Theming Keycloak Emails](#theming-keycloak-emails)
-   - [Localization and Internationalization](#localization-and-internationalization)
-10. [Troubleshooting](#10-troubleshooting)
-    - [Common Issues and Fixes](#common-issues-and-fixes)
+- [1. Introduction](#1-introduction)
+  - [What is Keycloakify?](#what-is-keycloakify)
+  - [Why Customize Keycloak Themes?](#why-customize-keycloak-themes)
+- [2. Prerequisites](#2-prerequisites)
+  - [Tools and Dependencies](#tools-and-dependencies)
+  - [Setting Up the Development Environment](#setting-up-the-development-environment)
+- [3. Project Setup](#3-project-setup)
+  - [Initialize a Vite + React + TypeScript Project](#initialize-a-vite--react--typescript-project)
+  - [Install Required Dependencies](#install-required-dependencies)
+- [4. Set Up Storybook for Local Testing](#4-set-up-storybook-for-local-testing)
+  - [Initialize Storybook](#initialize-storybook)
+  - [Configure Storybook](#configure-storybook)
+- [5. Integrate Keycloakify with Vite](#5-integrate-keycloakify-with-vite)
+  - [Create the `src/keycloak-theme` Directory](#create-the-srckeycloak-theme-directory)
+  - [Migrate the Source Code from Keycloakify Starter](#migrate-the-source-code-from-keycloakify-starter)
+  - [Rename `src/main.tsx` to `src/main.app.tsx`](#rename-srcmaintsx-to-srcmainapptsx)
+  - [Migrate Keycloakify Starter's `main.tsx`](#migrate-keycloakify-starters-maintsx)
+  - [Update `index.html`](#update-indexhtml)
+- [6. Customizing the Theme](#6-customizing-the-theme)
+  - [Adding Tailwind CSS](#adding-tailwind-css)
+  - [`vite.config.ts`](#viteconfigts)
+  - [Setting Up the Open Sans Font](#setting-up-the-open-sans-font)
+  - [Implementing a Dark Theme](#implementing-a-dark-theme)
+  - [Customizing Login Page](#customizing-login-page)
+    - [Final Solution Code:](#final-solution-code)
+  - [Customizing Keycloak Pages](#customizing-keycloak-pages)
+- [7. Configuration Files](#7-configuration-files)
+  - [`vite.config.ts`](#viteconfigts-1)
+  - [`tailwind.config.js`](#tailwindconfigjs)
+  - [`postcss.config.js`](#postcssconfigjs)
+  - [`.eslintrc.js`](#eslintrcjs)
+  - [`tsconfig.json`](#tsconfigjson)
+- [8. Building and Deploying the Theme](#8-building-and-deploying-the-theme)
+  - [Building the Theme](#building-the-theme)
+  - [Generating the JAR File](#generating-the-jar-file)
+  - [Deploying to Keycloak](#deploying-to-keycloak)
+- [9. Advanced Customizations](#9-advanced-customizations)
+  - [Adding Custom Pages](#adding-custom-pages)
+  - [Theming Keycloak Emails](#theming-keycloak-emails)
+  - [Localization and Internationalization](#localization-and-internationalization)
+- [10. Troubleshooting](#10-troubleshooting)
+  - [Common Issues and Fixes](#common-issues-and-fixes)
 
 
 ---
@@ -101,6 +104,7 @@ yarn add -D typescript vite vite-plugin-react
 yarn add -D storybook @storybook/react-vite @storybook/addon-essentials @storybook/react
 yarn add -D tailwindcss postcss autoprefixer @tailwindcss/postcss @tailwindcss/vite
 yarn add @fontsource/open-sans
+yarn add zustand
 ```
 
 ---
@@ -416,37 +420,6 @@ export default {
   },
   plugins: [],
 };
-```
-
-2. Add a theme toggle button in your React component:
-```tsx
-import { useState } from "react";
-
-const ThemeToggle = () => {
-  const [isDark, setIsDark] = useState(false);
-
-  const toggleTheme = () => {
-    setIsDark(!isDark);
-    document.documentElement.classList.toggle("dark", !isDark);
-  };
-
-  return (
-    <button onClick={toggleTheme}>
-      {isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
-    </button>
-  );
-};
-
-export default ThemeToggle;
-```
-
-3. Add dark mode styles in `src/index.css`:
-```css
-@layer components {
-  .dark {
-    @apply bg-gray-900 text-white;
-  }
-}
 ```
 
 ### Customizing Login Page
