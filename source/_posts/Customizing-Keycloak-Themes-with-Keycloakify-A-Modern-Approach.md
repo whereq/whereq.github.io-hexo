@@ -101,15 +101,6 @@ Keycloakify solves these problems by encapsulating the communication logic and p
 
 ---
 
-## Key Takeaways
-
-- **Keycloakify** is the best solution for customizing Keycloak themes with modern web technologies.
-- It abstracts the complexities of FreeMarker and provides a seamless development workflow.
-- Rewriting Keycloak’s UI components with React and Tailwind CSS allows for greater flexibility and alignment with your branding.
-- Avoid building a custom front-end from scratch unless you’re prepared for significant maintenance overhead.
-
----
-
 ## References
 
 - [Keycloak Official Website](https://www.keycloak.org/)
