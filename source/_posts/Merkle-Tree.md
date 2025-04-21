@@ -4,9 +4,11 @@ date: 2025-04-21 18:43:23
 categories:
 - Cypto Currency
 - Ethereum
+- Data Structure
 tags:
 - Cypto Currency
 - Ethereum
+- Data Structure
 ---
 
 ## 🔍 What is a Merkle Tree?
