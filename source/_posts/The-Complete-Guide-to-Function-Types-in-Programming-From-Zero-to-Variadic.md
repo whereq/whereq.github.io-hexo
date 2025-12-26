@@ -163,8 +163,8 @@ graph TD
     BB --> BBB[Division: a/b ≠ b/a]
     BB --> BBC[Power: a^b ≠ b^a]
     
-    BC --> BCA[(a+b)+c = a+(b+c)]
-    BC --> BCB[(a×b)×c = a×(b×c)]
+    BC --> BCA["(a+b)+c = a+(b+c)"]
+    BC --> BCB["(a×b)×c = a×(b×c)"]
 ```
 
 ### 2.4 Ternary Functions (3 Parameters)
