@@ -6,7 +6,6 @@ categories:
 tags:
 - Python
 ---
-# 📘 Comprehensive Guide to Python Looping & Iterators
 
 ## 🎯 Table of Contents
 1. [Fundamental Concepts](#fundamental-concepts)
@@ -24,12 +23,14 @@ tags:
 ### The Iteration Protocol
 
 ```mermaid
-graph LR
-    A[Iterable Object] -->|iter()| B[Iterator Object]
-    B -->|next()| C{Has next item?}
-    C -->|Yes| D[Return item]
-    D --> B
-    C -->|No| E[Raise StopIteration]
+graph TD
+    A[Iterable Object] --> B["iter()" function]
+    B --> C[Iterator Object]
+    C --> D["next()" function]
+    D --> E{Has next item?}
+    E -->|Yes| F[Return item]
+    F --> D
+    E -->|No| G[Raise StopIteration]
 ```
 
 ### **Iterable** vs **Iterator**
@@ -66,9 +67,9 @@ flowchart TD
     Start[Start for loop] --> GetIter[Call iter(iterable)]
     GetIter --> GetNext[Call next(iterator)]
     GetNext --> Check{StopIteration?}
-    Check -- No --> Execute[Execute loop body]
+    Check -->|No| Execute[Execute loop body]
     Execute --> GetNext
-    Check -- Yes --> End[End loop]
+    Check -->|Yes| End[End loop]
 ```
 
 ```python
@@ -142,22 +143,9 @@ for i, fruit in enumerate(fruits):
 
 ```mermaid
 graph LR
-    subgraph Inputs
-        A[List 1: a,b,c]
-        B[List 2: 1,2,3]
-    end
-    
-    subgraph Output
-        C[Tuple: a,1]
-        D[Tuple: b,2]
-        E[Tuple: c,3]
-    end
-    
-    A --> zip[zip function]
-    B --> zip
-    zip --> C
-    zip --> D
-    zip --> E
+    A[List 1<br/>a,b,c] --> Z[zip]
+    B[List 2<br/>1,2,3] --> Z
+    Z --> C[Tuples<br/>a,1<br/>b,2<br/>c,3]
 ```
 
 ```python
@@ -273,13 +261,14 @@ for value in tree:
 ### **Generator Functions**
 
 ```mermaid
-stateDiagram-v2
-    [*] --> Created
-    Created --> Running: next() called
-    Running --> Paused: yield
-    Paused --> Running: next() called
-    Running --> [*]: return/StopIteration
-    Paused --> [*]: close()
+graph LR
+    A[Generator Function] --> B[yield statement]
+    B --> C[Pause execution]
+    C --> D[next() called]
+    D --> E[Resume after yield]
+    E --> B
+    B --> F[Function ends]
+    F --> G[StopIteration]
 ```
 
 ```python
@@ -548,17 +537,19 @@ def method4():
 # List comprehension > Generator expression > Traditional loop > map+filter
 ```
 
-### **Memory Efficiency**
+### **Memory Efficiency Diagram**
 
 ```mermaid
-flowchart TD
-    A[Large Dataset] --> B{Processing Method}
-    B -->|List Comprehension| C[Creates Full List<br/>High Memory Usage]
-    B -->|Generator Expression| D[Yields Items Lazily<br/>Low Memory Usage]
+graph TD
+    A[Large Dataset] --> B[List Comprehension]
+    A --> C[Generator Expression]
+    B --> D[Creates Full List<br/>High Memory]
+    C --> E[Yields Items Lazily<br/>Low Memory]
     
-    E[Use Case] --> B
-    C --> F[Fast execution<br/>Multiple reuse]
-    D --> G[Memory efficient<br/>Single pass]
+    F[Small Dataset<br/>Reused] --> B
+    F --> C
+    B --> G[Faster Execution]
+    C --> H[Slower Creation]
 ```
 
 ### **Best Practices Checklist**
@@ -702,28 +693,27 @@ sum(debugged)  # Still works because we returned unconsumed iterator
 | **Filter** | `filter(pred, iterable)` | Filter items |
 | **Async For** | `async for item in async_iterable:` | Async iteration |
 
-### **Decision Flow**
+### **When to Use What**
 
 ```mermaid
-flowchart TD
-    A[Start iteration] --> B{Data size?}
-    B -->|Small| C{Need new collection?}
-    B -->|Large| D[Use generators]
+graph TD
+    Start[Need to iterate?] --> Small{Data size?}
+    Small -->|Small| Create{Create collection?}
+    Small -->|Large| Lazy[Use Generators]
     
-    C -->|Yes| E{Simple transformation?}
-    C -->|No| F[Use for loop]
+    Create -->|Yes| Transform{Need transformation?}
+    Create -->|No| Loop[Use for loop]
     
-    E -->|Yes| G[List comprehension]
-    E -->|No| H[Generator expression]
+    Transform -->|Yes| Comp[Use Comprehension]
+    Transform -->|No| Loop
     
-    D --> I{Complex patterns?}
-    I -->|Yes| J[Use itertools]
-    I -->|No| K[Generator function]
+    Comp --> Simple{Simple logic?}
+    Simple -->|Yes| LC[List Comprehension]
+    Simple -->|No| GenExp[Generator Expression]
     
-    G --> L[Fast, memory intensive]
-    H --> M[Memory efficient]
-    J --> N[Powerful combinations]
-    K --> O[Custom logic]
+    Lazy --> IOTools{Complex patterns?}
+    IOTools -->|Yes| Itertools[Use itertools]
+    IOTools -->|No| GenFunc[Generator Function]
 ```
 
 ### **Key Takeaways**
@@ -748,5 +738,3 @@ flowchart TD
 - [More Itertools](https://more-itertools.readthedocs.io/) (Third-party library)
 
 ---
-
-*Last updated: Python 3.12 | Modern syntax includes: walrus operator, pattern matching, strict zip, type hints*
