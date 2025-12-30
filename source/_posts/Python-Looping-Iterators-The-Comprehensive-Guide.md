@@ -24,7 +24,7 @@ tags:
 
 ```mermaid
 graph TD
-    A[Iterable Object] --> B["iter()" function]
+    A[Iterable Object] --> B["iter() function"]
     B --> C[Iterator Object]
     C --> D["next()" function]
     D --> E{Has next item?}
@@ -64,8 +64,8 @@ print(isinstance(iterator, Iterator))  # True - Now it's an iterator
 
 ```mermaid
 flowchart TD
-    Start[Start for loop] --> GetIter[Call iter"(iterable)"]
-    GetIter --> GetNext[Call "next(iterator)"]
+    Start[Start for loop] --> GetIter["Call iter(iterable)"]
+    GetIter --> GetNext["Call next(iterator)"]
     GetNext --> Check{StopIteration?}
     Check -->|No| Execute[Execute loop body]
     Execute --> GetNext
@@ -264,7 +264,7 @@ for value in tree:
 graph LR
     A[Generator Function] --> B[yield statement]
     B --> C[Pause execution]
-    C --> D["next()" called]
+    C --> D["next() called"]
     D --> E[Resume after yield]
     E --> B
     B --> F[Function ends]
