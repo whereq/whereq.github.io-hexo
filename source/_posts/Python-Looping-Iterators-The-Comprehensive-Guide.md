@@ -64,7 +64,7 @@ print(isinstance(iterator, Iterator))  # True - Now it's an iterator
 
 ```mermaid
 flowchart TD
-    Start[Start for loop] --> GetIter[Call "iter(iterable)"]
+    Start[Start for loop] --> GetIter[Call iter"(iterable)"]
     GetIter --> GetNext[Call "next(iterator)"]
     GetNext --> Check{StopIteration?}
     Check -->|No| Execute[Execute loop body]
