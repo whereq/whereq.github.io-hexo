@@ -135,8 +135,8 @@ Same subproblem appears again and again
 
 ```mermaid
 graph TD
-    A[fib(5)] --> B[fib(4)]
-    A --> C[fib(3)]
+    A["fib(5)"] --> B["fib(4)"]
+    A --> C["fib(3)"]
     B --> C
 ```
 
